@@ -1,52 +1,61 @@
 // vite.config.js
 import { defineConfig } from 'vite';
 import fg from 'fast-glob';
-import { resolve, dirname } from 'path'; // Import dirname
+import { resolve, dirname } from 'path';
 
 export default defineConfig(({ command }) => {
-    // charts/**/index.html 패턴에 맞는 모든 파일 수집
-    const htmlFiles = fg.sync('charts/**/index.html', { onlyFiles: true }); // Ensure only files are matched
+    // 1. 루트를 제외한 하위 폴더의 index.html만 찾도록 수정
+    //    *** 'dist/**' 를 ignore 옵션에 추가 ***
+    const htmlFiles = fg.sync('./*/index.html', {
+        onlyFiles: true,
+        // node_modules 와 dist 폴더는 검색 대상에서 제외
+        ignore: ['node_modules/**', 'dist/**'],
+    });
 
-    // rollupOptions.input 객체 구성
+    // 2. 찾은 하위 폴더의 index.html들로 input 객체 구성 (변경 없음)
     const input = Object.fromEntries(
-        htmlFiles.map((file) => [
-            // Key: 'charts/some-chart' (used internally by Vite)
-            dirname(file), // Use directory path as key
-            // Value: Absolute path to the index.html file
-            resolve(__dirname, file)
-        ])
+        htmlFiles.map((file) => {
+            const dirName = dirname(file).replace(/^\.\//, ''); // './some-chart' -> 'some-chart'
+            return [
+                dirName,
+                resolve(__dirname, file)
+            ];
+        })
     );
 
+    // 3. 루트 index.html을 'main' 키로 명시적으로 추가 (변경 없음)
+    input.main = resolve(__dirname, 'index.html');
 
-    // *** 루트 index.html을 input 객체에 추가 ***
-    // 'main' 또는 원하는 다른 키 이름을 사용할 수 있습니다.
-    // 이 키 이름은 빌드 출력 폴더 구조에 영향을 줄 수 있습니다. (예: dist/index.html)
-    input.main = resolve('index.html'); // 프로젝트 루트의 index.html 경로 추가
-
-    // Generate the list of accessible URLs for the index page
+    // 4. main.js에서 사용할 차트 페이지 링크 목록 생성 (변경 없음)
     const chartPaths = htmlFiles
         .map(file => {
-            // Convert 'charts/some-chart/index.html' to '/charts/some-chart/'
-            const dir = dirname(file); // Get 'charts/some-chart'
-            return `/${dir}/`; // Prepend and append slashes for URL path
+            const dir = dirname(file).replace(/^\.\//, ''); // 'some-chart'
+            return `/${dir}/`;
         })
-        .sort(); // Sort alphabetically
+        .sort();
 
+    // 5. 배포 환경에 맞는 base 경로 설정 (변경 없음)
+    const base = command === 'build' ? '/' : '/'; // <-- GitHub Pages 등에 배포 시 저장소 이름으로 변경!
+
+    // 나머지 설정 (return 이하)은 이전과 동일하게 유지합니다.
     return {
-        // 공통 옵션 (필요시 추가: base, root 등)
-        // base: '/', // Default, adjust if needed
-
-        // Inject the chart paths list into the client code
+        base: base,
         define: {
-            // Pass the sorted list as a JSON string
-            'import.meta.env.VITE_CHART_PAGES': JSON.stringify(chartPaths)
+            'import.meta.env.VITE_CHART_PAGES': JSON.stringify(chartPaths),
+            'import.meta.env.BASE_URL': JSON.stringify(base),
         },
-        base: '/charts/', // <-- 저장소 이름으로 변경하세요!
         build: {
             rollupOptions: {
-                input
-                // Optional: Configure output structure if needed
-                // output: { ... }
+                input,
+                output: {
+                    assetFileNames: 'assets/[name]-[hash][extname]',
+                    entryFileNames: ({ name }) => {
+                        if (name === 'main') {
+                            return 'assets/[name]-[hash].js';
+                        }
+                        return `${name}/[name]-[hash].js`;
+                    }
+                }
             }
         }
     };
