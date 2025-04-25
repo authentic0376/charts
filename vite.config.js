@@ -41,7 +41,7 @@ export default defineConfig(({ command }) => {
             // Pass the sorted list as a JSON string
             'import.meta.env.VITE_CHART_PAGES': JSON.stringify(chartPaths)
         },
-
+        base: '/charts/', // <-- 저장소 이름으로 변경하세요!
         build: {
             rollupOptions: {
                 input
