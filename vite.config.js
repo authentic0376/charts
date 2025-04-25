@@ -3,60 +3,50 @@ import { defineConfig } from 'vite';
 import fg from 'fast-glob';
 import { resolve, dirname } from 'path';
 
-export default defineConfig(({ command }) => {
-    // 1. 루트를 제외한 하위 폴더의 index.html만 찾도록 수정
-    //    *** 'dist/**' 를 ignore 옵션에 추가 ***
-    const htmlFiles = fg.sync('./*/index.html', {
-        onlyFiles: true,
-        // node_modules 와 dist 폴더는 검색 대상에서 제외
-        ignore: ['node_modules/**', 'dist/**'],
-    });
+const GITHUB_PAGES_REPO_NAME = 'charts';
 
-    // 2. 찾은 하위 폴더의 index.html들로 input 객체 구성 (변경 없음)
-    const input = Object.fromEntries(
-        htmlFiles.map((file) => {
-            const dirName = dirname(file).replace(/^\.\//, ''); // './some-chart' -> 'some-chart'
-            return [
-                dirName,
-                resolve(__dirname, file)
-            ];
-        })
-    );
+export default defineConfig(({ command, mode }) => { // command 파라미터 사용
 
-    // 3. 루트 index.html을 'main' 키로 명시적으로 추가 (변경 없음)
+    console.log('--- Vite Config Executing ---'); // 실행 확인용
+    console.log('Current command:', command, mode); // ★★★ command 값 확인 ★★★
+    console.log('Current mode:', mode);     // ★★★ mode 값 확인 ★★★
+
+    // ... (htmlFiles, input, chartPaths 설정은 동일하게 유지) ...
+    const htmlFiles = fg.sync('./*/index.html', { onlyFiles: true, ignore: ['node_modules/**', 'dist/**'] });
+    const input = Object.fromEntries(htmlFiles.map(file => [dirname(file).replace(/^\.\//, ''), resolve(__dirname, file)]));
     input.main = resolve(__dirname, 'index.html');
+    const chartPaths = htmlFiles.map(file => `/${dirname(file).replace(/^\.\//, '')}/`).sort();
 
-    // 4. main.js에서 사용할 차트 페이지 링크 목록 생성 (변경 없음)
-    const chartPaths = htmlFiles
-        .map(file => {
-            const dir = dirname(file).replace(/^\.\//, ''); // 'some-chart'
-            return `/${dir}/`;
-        })
-        .sort();
+    // base 계산 로직 수정 (mode 기준 테스트)
+    // preview는 production 모드를 기반으로 하므로, build와 preview 모두 production 모드일 가능성이 높음
+    const base = mode === 'production'
+        ? `/${GITHUB_PAGES_REPO_NAME}/` // '/charts/'
+        : '/';
 
-    // 5. 배포 환경에 맞는 base 경로 설정 (변경 없음)
-    const base = command === 'build' ? '/' : '/'; // <-- GitHub Pages 등에 배포 시 저장소 이름으로 변경!
+    console.log('Calculated base:', base); // ★★★ 계산된 base 값 확인 ★★★
 
-    // 나머지 설정 (return 이하)은 이전과 동일하게 유지합니다.
     return {
-        base: base,
+        base: base, // 계산된 base 경로 적용
         define: {
             'import.meta.env.VITE_CHART_PAGES': JSON.stringify(chartPaths),
-            'import.meta.env.BASE_URL': JSON.stringify(base),
+            // 'import.meta.env.BASE_URL': JSON.stringify(base), // 필요 시 주석 해제
         },
         build: {
             rollupOptions: {
                 input,
                 output: {
                     assetFileNames: 'assets/[name]-[hash][extname]',
-                    entryFileNames: ({ name }) => {
-                        if (name === 'main') {
-                            return 'assets/[name]-[hash].js';
-                        }
-                        return `${name}/[name]-[hash].js`;
-                    }
+                    entryFileNames: ({ name }) => name === 'main' ? 'assets/[name]-[hash].js' : `assets/${name}-[hash].js`,
+                    chunkFileNames: 'assets/[name]-[hash].js',
                 }
             }
-        }
+        },
+        // server.base 는 명시적으로 설정하지 않아도 위에서 계산된 base 값을 따르므로 제거해도 괜찮습니다.
+        // server: {
+        //     base: '/', // 제거하거나, base 변수를 사용하도록 수정: base: command === 'serve' ? '/' : undefined
+        // }
+        // 명시적으로 dev 서버만 루트에서 실행하고 싶다면 이렇게 할 수도 있습니다.
+        server: command === 'serve' ? { base: '/' } : undefined
+        // 하지만 보통은 그냥 위의 top-level base 설정에 맡기는 것이 간단합니다.
     };
 });
