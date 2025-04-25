@@ -17,6 +17,12 @@ export default defineConfig(({ command }) => {
         ])
     );
 
+
+    // *** 루트 index.html을 input 객체에 추가 ***
+    // 'main' 또는 원하는 다른 키 이름을 사용할 수 있습니다.
+    // 이 키 이름은 빌드 출력 폴더 구조에 영향을 줄 수 있습니다. (예: dist/index.html)
+    input.main = resolve('index.html'); // 프로젝트 루트의 index.html 경로 추가
+
     // Generate the list of accessible URLs for the index page
     const chartPaths = htmlFiles
         .map(file => {
