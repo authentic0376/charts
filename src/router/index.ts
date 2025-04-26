@@ -3,8 +3,6 @@ import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router';
 // 뷰 컴포넌트 임포트 - TypeScript 환경에서도 .vue 파일 임포트는 동일하게 잘 작동합니다.
 import HomeView from '../views/HomeView.vue';
 import { pascalToSnake } from '../utils/caseConverter'; // 만약 별도 파일로 분리했다면 경로 수정
-// import AboutView from '../views/AboutView.vue';
-// import ContactView from '../views/ContactView.vue';
 
 // 404 페이지 컴포넌트 (선택 사항) - 간단한 타입 추론을 위해 인라인으로 유지하거나,
 // 별도의 컴포넌트로 만들고 임포트할 수 있습니다.

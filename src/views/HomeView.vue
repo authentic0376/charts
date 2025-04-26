@@ -1,26 +1,13 @@
 <template>
-  <div>
-    <h1>홈 페이지</h1>
-    <p>여기는 홈페이지입니다.</p>
-    <nav>
-      <ul>
-        <!-- router-link 컴포넌트를 사용하여 네비게이션 링크 생성 -->
-        <!-- `to` 속성에 라우터 설정 파일에서 정의한 path 또는 name을 지정 -->
-        <li>
-          <router-link to="/">홈</router-link>
-        </li>
-        <!-- 동적으로 생성된 차트 링크 -->
-        <li v-for="chartRoute in chartNavLinks" :key="chartRoute.name">
-          <!-- :to에는 경로(path)를 바인딩하고, 링크 텍스트로는 이름(name)을 사용 -->
-          <router-link :to="chartRoute.path">{{ chartRoute.name }}</router-link>
-        </li>
-        <li>
-          <router-link to="/about">소개</router-link>
-        </li>
-        <!--        <router-link :to="{ name: 'contact' }">연락처 (이름으로 링크)</router-link>-->
-      </ul>
-    </nav>
-  </div>
+  <h1>Charts Index</h1>
+  <nav>
+    <ul>
+      <li v-for="chartRoute in chartNavLinks" :key="chartRoute.name">
+        <!-- :to에는 경로(path)를 바인딩하고, 링크 텍스트로는 이름(name)을 사용 -->
+        <router-link :to="chartRoute.path">{{ chartRoute.name }}</router-link>
+      </li>
+    </ul>
+  </nav>
 </template>
 
 <script setup lang="ts">
