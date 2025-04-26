@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Basis Transformation Visualizer</title>
+
+    <!-- KaTeX CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" >
+
+    <!-- KaTeX JS -->
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" ></script>
+
+    <!-- KaTeX Auto-render Extension -->
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" ></script> <!-- 페이지 로드 후 자동 렌더링 실행 -->
+
+    <!-- CSS 파일 링크 -->
+    <link rel="stylesheet" href="style.css">
+
+    <!-- KaTeX Auto-render Configuration (DOMContentLoaded 사용) -->
+<!--    <script>-->
+<!--        document.addEventListener("DOMContentLoaded", function() {-->
+<!--            // renderMathInElement 함수가 로드된 후 실행되도록 보장-->
+<!--            if (typeof renderMathInElement === 'function') {-->
+<!--                renderMathInElement(document.body, {-->
+<!--                    delimiters: [-->
+<!--                        {left: '$$', right: '$$', display: true},-->
+<!--                        {left: '$', right: '$', display: false},-->
+<!--                        {left: '\\(', right: '\\)', display: false},-->
+<!--                        {left: '\\[', right: '\\]', display: true}-->
+<!--                    ],-->
+<!--                    throwOnError : false-->
+<!--                });-->
+<!--            } else {-->
+<!--                console.error("KaTeX auto-render function not found.");-->
+<!--            }-->
+<!--        });-->
+<!--    </script>-->
+
+</head>
+<body>
+<!-- 전체 앱을 감싸는 컨테이너 (Vite 기본) -->
+<div id="app">
+    <h1>2D Basis Transformation (KaTeX Demo)</h1>
+
+    <div id="canvas-container"></div>
+
+    <!-- Controls Container -->
+    <div id="controls-container">
+        <!-- Sliders and Button will be added here by p5.js -->
+    </div>
+
+    <!-- *** KaTeX 정보 표시 영역 *** -->
+    <div id="info-container">
+        <div class="info-section">
+            <h3>Primal Basis</h3>
+            <span id="primal-e1"></span>
+            <span id="primal-e2"></span>
+        </div>
+        <div class="info-section">
+            <h3>Transformation Matrix</h3>
+            <span id="matrix-m"></span>
+            <span id="determinant"></span>
+        </div>
+        <div class="info-section">
+            <h3>Dual Basis (Rows of M⁻¹)</h3>
+            <span id="dual-epsilon1"></span>
+            <span id="dual-epsilon2"></span>
+        </div>
+        <div class="info-section">
+            <h3>Inverse Matrix M⁻¹</h3>
+            <span id="matrix-m-inv"></span>
+        </div>
+    </div>
+    <!-- *** KaTeX 정보 표시 영역 끝 *** -->
+</div>
+
+<!-- 메인 TypeScript 파일 참조 -->
+<script type="module" src="index.ts"></script>
+</body>
+</html>

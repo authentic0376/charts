@@ -9,10 +9,12 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "fast-glob": "^3.3.3",
+    "typescript": "^5.8.3",
     "vite": "^6.3.1"
   },
   "dependencies": {
-    "p5": "^2.0.1"
+    "p5": "^2.0.1",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.1"
   }
 }

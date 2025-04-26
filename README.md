@@ -1,0 +1,15 @@
+# js 차트 저장소
+- p5 js 라이브러리 이용
+- vite 로 빌드
+- main 브랜치에 소스코드 저장
+- gh-pages 브랜치는 Github Pages 로 활성화하고 빌드한 dist 폴더 내용물을 push한다
+- Github Actions 를 쓰면 클라우드에서 환경구축하고 빌드하는데 너무 오래 걸리므로 직접 빌드하고 push한다
+- dist 폴더는 빌드폴더라 main에서 git이 tracking하지 않는다. 따라서 gh-pages 브랜치에 체크아웃하면 working directory에 dist폴더가 그대로 있다. 그 안의 내용을 그대로 복사해서 프로젝트 루트에 붙여 넣으면 된다
+- 그런식으로 tracking 되지 않은 파일들이 gh-pages에 뜨는데, 이것들이 staging 되지 않도록 주의해야 한다
+- 보통, dist안의 내용물을 프로젝트 루트에 붙여 넣을 때 그 파일들을 add할 건지 묻는 대화상자가 나온다. 이런식으로 이 파일들만 add시킨다. 그리고 커밋 푸쉬하면 된다
+- 프로젝트 루트에 차트별로 폴더를 만들고 index.html과 index.js를 만든다
+- 차트에 접속은 https://authentic0376.github.io/charts/ + 차트폴더명/ 으로 하고 끝에 /를 붙여야 한다
+- 이 주소를 iframe으로 임베딩 해서 쓰면 된다
+    ```javascript
+  <iframe width="802" height="302" src="https://authentic0376.github.io/charts/shannon_sampling_theorem/" frameborder="0"></iframe>
+  ```
