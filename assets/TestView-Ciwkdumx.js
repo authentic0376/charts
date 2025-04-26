@@ -1,1 +1,0 @@
-import{_ as s,c as a,e as t,b as o}from"./index-BSLb-LHm.js";const c={__name:"TestView",setup(n){return(r,e)=>(o(),a("div",null,e[0]||(e[0]=[t("h1",null,"홈이 아니라 테스트",-1),t("p",null,"여기는 테스트 페이지다",-1)])))}},l=s(c,[["__scopeId","data-v-ad10c79c"]]);export{l as default};
