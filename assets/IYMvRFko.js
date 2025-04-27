@@ -1,0 +1,1 @@
+import{_ as a,c as s,a as t,o as n}from"./BBbhQbof.js";const o={__name:"index",setup(r){return(c,e)=>(n(),s("div",null,e[0]||(e[0]=[t("h1",null,"test dir",-1),t("p",null,"test dir page",-1)])))}},l=a(o,[["__scopeId","data-v-06ceceba"]]);export{l as default};
