@@ -1,7 +1,7 @@
 // vite.config.ts
 import {defineConfig, type ConfigEnv} from 'vite'; // defineConfig와 ConfigEnv 타입 임포트
 import vue from '@vitejs/plugin-vue';
-
+import path from 'path'; // Node.js path 모듈
 
 const GITHUB_PAGES_REPO_NAME = 'charts';
 
@@ -17,6 +17,10 @@ export default defineConfig(({command, mode}: ConfigEnv) => {
     return {
         plugins: [vue()],
         base: base, // 계산된 base 경로 적용
-
+        resolve: {
+            alias: {
+                '@': path.resolve(__dirname, './src'), // @를 ./src 경로로 별칭 지정
+            },
+        },
     };
 });

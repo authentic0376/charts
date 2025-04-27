@@ -6,6 +6,9 @@
         <!-- :to에는 경로(path)를 바인딩하고, 링크 텍스트로는 이름(name)을 사용 -->
         <router-link :to="chartRoute.path">{{ chartRoute.name }}</router-link>
       </li>
+      <li>
+        <router-link to="charts/test_dir">폴더/index</router-link>
+      </li>
     </ul>
   </nav>
 </template>

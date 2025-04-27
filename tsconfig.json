@@ -8,6 +8,10 @@
     // import.meta 를 사용하기 위해 lib 에 "ESNext" 또는 해당 기능이 포함된 버전 추가 필요할 수 있음
     // 보통 target/module 설정 시 자동으로 포함되지만 명시적으로 추가 가능
     "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "baseUrl": ".", // 경로 해석의 기준점
+    "paths": {
+      "@/*": ["src/*"]// @/* 패턴을 src/* 로 매핑
+    }
   },
-  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"],
+  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"]
 }

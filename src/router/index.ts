@@ -2,7 +2,8 @@ import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router';
 
 // 뷰 컴포넌트 임포트 - TypeScript 환경에서도 .vue 파일 임포트는 동일하게 잘 작동합니다.
 import HomeView from '../views/HomeView.vue';
-import { pascalToSnake } from '../utils/caseConverter'; // 만약 별도 파일로 분리했다면 경로 수정
+// 정의한 라우팅 전략 함수들을 임포트
+import { singleFileViewStrategy, directoryIndexStrategy /*, specialChartStrategy */ } from './strategies'; // 경로 확인
 
 // 404 페이지 컴포넌트 (선택 사항) - 간단한 타입 추론을 위해 인라인으로 유지하거나,
 // 별도의 컴포넌트로 만들고 임포트할 수 있습니다.
@@ -10,29 +11,42 @@ import { pascalToSnake } from '../utils/caseConverter'; // 만약 별도 파일�
 const NotFoundComponent = { template: '<div><h2>404: 페이지를 찾을 수 없습니다.</h2><p>주소가 올바른지 확인해주세요.</p></div>' };
 
 // --- 동적 차트 라우트 생성 ---
+// 1. 적용할 모든 라우팅 전략 함수들을 배열로 관리
+//    새로운 규칙 추가 시 이 배열에 새 전략 함수만 추가하면 됩니다.
+const chartRouteStrategies = [
+    singleFileViewStrategy,
+    directoryIndexStrategy,
+    // specialChartStrategy, // 새로운 전략이 있다면 여기에 추가
+];
 
-// 1. Vite의 import.meta.glob으로 `src/views/charts` 폴더 아래의 *View.vue 파일을 찾습니다.
-//    TypeScript 제네릭 <() => Promise<any>> 는 값의 타입(모듈을 비동기 로드하는 함수)을 명시합니다.
-const chartModules = import.meta.glob<() => Promise<any>>('../views/charts/*View.vue');
 
-// 2. 찾은 모듈 정보를 기반으로 RouteRecordRaw 배열을 생성합니다.
-const chartRoutes: RouteRecordRaw[] = Object.keys(chartModules).map((path) => {
-    // 파일 경로에서 파일 이름 추출 (예: ../views/charts/ShannonSamplingTheoremView.vue -> ShannonSamplingTheoremView.vue)
-    const fileName = path.split('/').pop() || '';
-    // 파일 이름에서 확장자(.vue) 제거 (예: ShannonSamplingTheoremView.vue -> ShannonSamplingTheoremView)
-    const componentName = fileName.replace(/\.vue$/, '');
-    // 컴포넌트 이름을 snake_case로 변환 (예: ShannonSamplingTheoremView -> shannon_sampling_theorem)
-    const routeName = pascalToSnake(componentName);
+// 2. Vite의 import.meta.glob으로 잠재적인 모든 차트 뷰 파일을 찾습니다.
+//    각 전략이 처리할 파일 패턴을 모두 포함하도록 glob 패턴을 설정해야 합니다.
+const chartModules = import.meta.glob<() => Promise<any>>([
+    '../views/charts/*View.vue',         // singleFileViewStrategy 대상
+    '../views/charts/**/index.vue',      // directoryIndexStrategy 대상
+    // '../views/charts/special_rules/*.Chart.vue' // specialChartStrategy 대상
+]);
 
-    return {
-        // 경로 설정 (예: /charts/shannon_sampling_theorem)
-        path: `/charts/${routeName}`,
-        // 라우트 이름 설정 (예: shannon_sampling_theorem)
-        name: routeName,
-        // 컴포넌트 설정 (glob 결과에서 제공하는 비동기 import 함수 사용 - Lazy Loading)
-        component: chartModules[path],
-    };
-});
+// 3. 찾은 모듈과 정의된 전략들을 사용하여 라우트 배열 생성
+const chartRoutes: RouteRecordRaw[] = Object.entries(chartModules)
+    .map(([path, componentLoader]) => {
+        // 등록된 모든 전략을 순회하며 현재 파일 경로(path)를 처리할 수 있는지 확인
+        for (const strategy of chartRouteStrategies) {
+            const routeConfig = strategy(path, componentLoader);
+            // 해당 전략이 라우트 설정을 반환하면, 그 결과를 사용하고 다음 파일로 넘어감
+            if (routeConfig) {
+                // RouteRecordRaw 형태로 맞춰주기 (필요시 타입 단언 사용)
+                // 현재 전략 함수는 Pick<...>을 반환하므로, 추가 속성이 필요하다면 여기서 병합하거나 전략 함수 수정
+                return routeConfig as RouteRecordRaw;
+            }
+        }
+        // 어떤 전략에도 해당하지 않는 파일이 있다면 경고를 출력하고 무시
+        console.warn(`[Router Generator] No matching strategy found for path: ${path}`);
+        return null;
+    })
+    .filter((route): route is RouteRecordRaw => route !== null); // null 값 제거 및 타입 가드
+
 
 // 라우트 정의 배열에 타입 명시: RouteRecordRaw[]
 const routes: Array<RouteRecordRaw> = [
@@ -46,7 +60,7 @@ const routes: Array<RouteRecordRaw> = [
     // {
     //     path: '/charts/test_dir',
     //     name: 'test_dir',
-    //     component: () => import('@/views/charts/test_dir'),
+    //     component: () => import('@/views/charts/test_dir/index.vue'),
     // },
     // {
     //     path: '/contact',
