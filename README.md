@@ -20,5 +20,5 @@
 - 차트에 접속은 https://authentic0376.github.io/charts/ + 차트명
 - 이 주소를 iframe으로 임베딩 해서 쓰면 된다
     ```javascript
-  <iframe width="802" height="302" src="https://authentic0376.github.io/charts/#/charts/shannon_sampling_theorem" frameborder="0"></iframe>
+  <iframe width="802" height="302" src="https://authentic0376.github.io/charts/shannon_sampling_theorem" frameborder="0"></iframe>
   ```
