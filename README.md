@@ -12,6 +12,7 @@
 - `.output` 폴더는 빌드폴더라 `main`에서 git이 tracking하지 않는다. 따라서 `gh-pages` 브랜치에 체크아웃하면 working directory에 `.output`폴더가 그대로 있다. 그 안의 내용을 그대로 복사해서 프로젝트 루트에 붙여 넣으면 된다
 - 그런식으로 tracking 되지 않은 파일들이 `gh-pages`에 뜨는데, 이것들이 staging 되지 않도록 주의해야 한다
 - 보통, `.output/public`안의 내용물을 프로젝트 루트에 붙여 넣을 때 그 파일들을 add할 건지 묻는 대화상자가 나온다. 이런식으로 이 파일들만 add시킨다. 그리고 커밋 푸쉬하면 된다
+- 위의 과정을 `./deploy.sh` 로 대신한다
 
 ## 페이지 만들기
 - pages/ 폴더에 차트별로 폴더/index.vue 를 만들거나, 폴더없이 vue를 만든다

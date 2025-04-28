@@ -10,6 +10,7 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
+    "katex": "^0.16.22",
     "nuxt": "^3.16.2",
     "p5": "^2.0.1",
     "vue": "^3.5.13",
