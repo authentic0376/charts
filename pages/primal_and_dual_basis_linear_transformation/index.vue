@@ -120,6 +120,6 @@ watch(
 );
 
 </script>
-<style>
+<style scoped>
 
 </style>

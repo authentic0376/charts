@@ -1,6 +1,6 @@
 <!-- pages/index.vue -->
 <template>
-  <div>
+  <div class="view">
     <h1>Charts Index</h1>
     <nav>
       <ul>
@@ -17,17 +17,17 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import {computed} from 'vue';
 // vue-router 에서 useRouter 를 가져옵니다. Nuxt가 자동으로 제공합니다.
-import { useRouter } from 'vue-router'; // 또는 '#vue-router', '#imports'
+import {useRouter} from 'vue-router'; // 또는 '#vue-router', '#imports'
 // useHead 컴포저블을 임포트합니다.
-import { useHead } from '#imports'; // 또는 '@unhead/vue' (Nuxt 3.8+ 권장) or 'nuxt/app'
+import {useHead} from '#imports'; // 또는 '@unhead/vue' (Nuxt 3.8+ 권장) or 'nuxt/app'
 
 // useHead를 호출하고 title 속성을 설정합니다.
 useHead({
   title: 'Index', // 이 페이지의 제목
   meta: [
-    { name: 'description', content: 'Learn more about our company.' }
+    {name: 'description', content: 'Learn more about our company.'}
   ],
   // 다른 head 태그들도 설정 가능 (link, script 등)
 })
@@ -69,3 +69,21 @@ const chartLinks = computed(() => {
 });
 
 </script>
+<style scoped>
+.view {
+  padding: 2.5rem;
+}
+
+h1 {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+li {
+  list-style: disc inside;
+}
+
+li:hover {
+  font-weight: bold;
+}
+</style>
