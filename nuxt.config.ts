@@ -14,4 +14,5 @@ export default defineNuxtConfig({
     baseURL: process.env.NODE_ENV === 'production' ? '/charts/' : '/',
     buildAssetsDir: '/assets/' // GitHub Pages에서 정적 에셋 경로 문제 방지
   },
+  modules: ['@nuxtjs/tailwindcss'],
 })

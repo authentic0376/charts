@@ -23,3 +23,12 @@
     ```javascript
   <iframe width="802" height="302" src="https://authentic0376.github.io/charts/shannon_sampling_theorem" frameborder="0"></iframe>
   ```
+
+## tailwindcss
+- https://tailwindcss.nuxtjs.org/getting-started/installation
+  ```
+  npx nuxi@latest module add tailwindcss
+  ```
+  `npm install` 로 설치하면 module이 nuxt.config.ts 에 추가가 안되니까 `npx nuxi` 이용
+- `asset/main.css` 등은 생성도 안되고 만들 필요도 없다.
+- `tailwind.config.ts` 은 필요하면 `npx tailwindcss init`
