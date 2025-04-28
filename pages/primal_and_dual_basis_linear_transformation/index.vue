@@ -7,7 +7,7 @@
     <!-- Controls Container (ClientOnly) -->
     <ClientOnly>
       <div ref="controlsContainerRef" id="controls-container">
-        <div class="grid grid-cols-2 btn btn-blue">
+        <div class="grid grid-cols-2">
           <div><span>e₁.x</span>
             <div ref="slider_e1x_container"></div>
           </div>
@@ -156,6 +156,7 @@ watch(
 
 </script>
 <style scoped>
+
 .app-container {
   max-width: 600px;
 }
