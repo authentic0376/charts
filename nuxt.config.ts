@@ -1,3 +1,5 @@
+import tailwindcss from "@tailwindcss/vite";
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
@@ -12,7 +14,12 @@ export default defineNuxtConfig({
     },
     // GitHub Pages 저장소 이름으로 baseURL 설정
     baseURL: process.env.NODE_ENV === 'production' ? '/charts/' : '/',
-    buildAssetsDir: '/assets/' // GitHub Pages에서 정적 에셋 경로 문제 방지
+    // buildAssetsDir: '/assets/' // GitHub Pages에서 정적 에셋 경로 문제 방지
   },
-  modules: ['@nuxtjs/tailwindcss'],
+  css: ['~/assets/css/main.css'],
+  vite: {
+    plugins: [
+      tailwindcss(),
+    ],
+  }
 })
