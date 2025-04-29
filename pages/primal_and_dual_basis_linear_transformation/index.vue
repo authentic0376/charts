@@ -2,7 +2,7 @@
   <div class="w-md flex flex-col space-y-2">
 
     <!-- Canvas Container -->
-    <div ref="canvasContainerRef" id="canvas-container"></div>
+    <div class="self-center" ref="canvasContainerRef" id="canvas-container"></div>
 
     <!-- Controls Container (ClientOnly) -->
     <ClientOnly>
