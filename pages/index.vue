@@ -23,6 +23,7 @@ import {useRouter} from 'vue-router'; // 또는 '#vue-router', '#imports'
 // useHead 컴포저블을 임포트합니다.
 import {useHead} from '#imports';
 import AnimatedLink from "~/components/AnimatedLink.vue"; // 또는 '@unhead/vue' (Nuxt 3.8+ 권장) or 'nuxt/app'
+import { replaceUnderscoresAndTrimEdges } from '@/utils/stringUtils';
 
 // useHead를 호출하고 title 속성을 설정합니다.
 useHead({
@@ -34,18 +35,6 @@ useHead({
 })
 
 const router = useRouter();
-
-// 링크 텍스트를 보기 좋게 변환하는 헬퍼 함수 (선택 사항)
-function formatLinkText(pathSegment: string) {
-  if (!pathSegment) return 'Charts Index'; // 예: /charts/ 경로 자체
-
-  // 'my-chart-example' -> 'My Chart Example'
-  return pathSegment
-      .replace(/-/g, ' ') // 하이픈을 공백으로
-      .split('/') // 하위 폴더 경로 처리 ('folder/my-chart')
-      .map(segment => segment.charAt(0).toUpperCase() + segment.slice(1)) // 각 세그먼트 첫 글자 대문자화
-      .join(' / '); // 슬래시로 다시 연결
-}
 
 // 계산된 속성(computed)을 사용하여 라우트 목록이 변경될 때 자동으로 업데이트되도록 함
 const chartLinks = computed(() => {
@@ -62,7 +51,7 @@ const chartLinks = computed(() => {
       .map(route => {
 
         return {
-          text: route.path.substring(1), // 슬래시 제거한 이름
+          text: replaceUnderscoresAndTrimEdges(route.path.substring(1)), // 슬래시 제거한 이름
           path: route.path                       // 실제 라우트 경로
         };
       })
