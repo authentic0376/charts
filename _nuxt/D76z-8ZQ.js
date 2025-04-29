@@ -1,0 +1,1 @@
+import{_ as a,c as s,a as t,o as n}from"./a2z3nRCb.js";const o={__name:"index",setup(r){return(_,e)=>(n(),s("div",null,e[0]||(e[0]=[t("h1",null,"테스트 수정",-1),t("p",null,"test dir page",-1)])))}},l=a(o,[["__scopeId","data-v-c16ba452"]]);export{l as default};
