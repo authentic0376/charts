@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1>test dir</h1>
+    <h1>테스트 수정</h1>
     <p>test dir page</p>
   </div>
 </template>
