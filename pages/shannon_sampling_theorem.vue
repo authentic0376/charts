@@ -230,7 +230,3 @@ onUnmounted(() => {
 });
 
 </script>
-
-<style scoped>
-
-</style>

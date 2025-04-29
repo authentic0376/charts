@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container">
+  <div class="w-md flex flex-col space-y-2">
 
     <!-- Canvas Container -->
     <div ref="canvasContainerRef" id="canvas-container"></div>
@@ -7,7 +7,7 @@
     <!-- Controls Container (ClientOnly) -->
     <ClientOnly>
       <div ref="controlsContainerRef" id="controls-container">
-        <div class="grid grid-cols-2">
+        <div class="grid grid-cols-2 justify-items-center">
           <div><span>e₁.x</span>
             <div ref="slider_e1x_container"></div>
           </div>
@@ -21,7 +21,7 @@
             <div ref="slider_e2y_container"></div>
           </div>
         </div>
-        <div class="btn-container" ref="resetButtonContainer"></div>
+        <div class="btn-container flex justify-end text-sm" ref="resetButtonContainer"></div>
       </div>
       <template #fallback>
         <div id="controls-container" style="/* Loading styles */">Loading controls...</div>
@@ -29,14 +29,23 @@
     </ClientOnly>
 
     <!-- KaTeX Info Display Area -->
-    <div id="info-container" class="grid grid-cols-2">
-      <div class="info-section"><h3>Primal Basis</h3><span ref="el_primal_e1"></span><span ref="el_primal_e2"></span>
+    <div id="info-container" class="grid grid-cols-2 gap-3 text-center text-xs">
+      <div class="info-section">
+        <h3 class="text-xl mb-2">Primal Basis</h3>
+        <div class="flex justify-around items-center"><span ref="el_primal_e1"></span><span ref="el_primal_e2"></span></div>
       </div>
-      <div class="info-section"><h3>Transformation Matrix</h3><span ref="el_matrix_m"></span><span
-          ref="el_determinant"></span></div>
-      <div class="info-section"><h3>Dual Basis</h3><span ref="el_dual_epsilon1"></span><span
-          ref="el_dual_epsilon2"></span></div>
-      <div class="info-section"><h3>Inverse Matrix M⁻¹</h3><span ref="el_matrix_m_inv"></span></div>
+      <div class="info-section">
+        <h3 class="text-xl mb-2">Transformation Matrix</h3>
+        <div class="flex justify-around items-center"><span ref="el_matrix_m"></span><span ref="el_determinant"></span></div>
+      </div>
+      <div class="info-section">
+        <h3 class="text-xl mb-2">Dual Basis</h3>
+        <div class="flex justify-around items-center"><span ref="el_dual_epsilon1"></span><span ref="el_dual_epsilon2"></span></div>
+      </div>
+      <div class="info-section">
+        <h3 class="text-xl mb-2">Inverse Matrix M⁻¹</h3>
+        <div class="flex justify-around items-center"><span ref="el_matrix_m_inv"></span></div>
+      </div>
     </div>
   </div>
 </template>
@@ -155,13 +164,3 @@ watch(
 );
 
 </script>
-<style scoped>
-
-.app-container {
-  max-width: 600px;
-}
-.info-section h3 {
-  font-size: 1.3rem;
-}
-
-</style>

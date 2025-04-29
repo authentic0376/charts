@@ -1,9 +1,9 @@
 <!-- pages/index.vue -->
 <template>
-  <div class="view">
-    <h1>Charts Index</h1>
+  <div class="background p-10">
+    <h1 class="text-5xl mb-3">Charts Index</h1>
     <nav>
-      <ul>
+      <ul class="list-disc list-inside">
         <!-- chartLinks 배열을 기반으로 링크 목록 생성 -->
         <li v-if="chartLinks.length === 0">
           No static charts found in /pages/charts/
@@ -69,21 +69,3 @@ const chartLinks = computed(() => {
 });
 
 </script>
-<style scoped>
-.view {
-  padding: 2.5rem;
-}
-
-h1 {
-  font-size: 3rem;
-  margin-bottom: 1rem;
-}
-
-li {
-  list-style: disc inside;
-}
-
-li:hover {
-  font-weight: bold;
-}
-</style>
