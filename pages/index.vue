@@ -9,7 +9,7 @@
           No static charts found in /pages/charts/
         </li>
         <li v-for="link in chartLinks" :key="link.path">
-          <NuxtLink class="link link--elara" :to="link.path"><span>{{ link.text }}</span></NuxtLink>
+          <AnimatedLink :to="link.path" :text="link.text" />
         </li>
       </ul>
     </nav>
@@ -21,7 +21,8 @@ import {computed} from 'vue';
 // vue-router 에서 useRouter 를 가져옵니다. Nuxt가 자동으로 제공합니다.
 import {useRouter} from 'vue-router'; // 또는 '#vue-router', '#imports'
 // useHead 컴포저블을 임포트합니다.
-import {useHead} from '#imports'; // 또는 '@unhead/vue' (Nuxt 3.8+ 권장) or 'nuxt/app'
+import {useHead} from '#imports';
+import AnimatedLink from "~/components/AnimatedLink.vue"; // 또는 '@unhead/vue' (Nuxt 3.8+ 권장) or 'nuxt/app'
 
 // useHead를 호출하고 title 속성을 설정합니다.
 useHead({
