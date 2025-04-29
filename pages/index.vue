@@ -1,15 +1,15 @@
 <!-- pages/index.vue -->
 <template>
-  <div class="background p-10">
+  <div class="background p-10 h-screen">
     <h1 class="text-5xl mb-3">Charts Index</h1>
     <nav>
-      <ul class="list-disc list-inside">
+      <ul>
         <!-- chartLinks 배열을 기반으로 링크 목록 생성 -->
         <li v-if="chartLinks.length === 0">
           No static charts found in /pages/charts/
         </li>
         <li v-for="link in chartLinks" :key="link.path">
-          <NuxtLink :to="link.path">{{ link.text }}</NuxtLink>
+          <NuxtLink class="link link--elara" :to="link.path"><span>{{ link.text }}</span></NuxtLink>
         </li>
       </ul>
     </nav>
