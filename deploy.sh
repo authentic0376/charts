@@ -114,15 +114,16 @@ fi
 echo -e "✅ gh-pages 브랜치로 성공적으로 전환되었습니다."
 
 
-# 4. gh-pages 브랜치의 기존 *추적 중인* 파일들 삭제
+# 4. gh-pages 브랜치의 기존 *추적 중인* 파일들 삭제 (*** .nojekyll 제외 ***)
 #    (unversioned 파일 - 예: node_modules, .output 등 - 은 삭제하지 않음)
-echo -e "\n${BOLD}🧹 >>> 4. gh-pages 브랜치의 기존 *추적 중인* 파일들을 삭제합니다.${RESET}"
+echo -e "\n${BOLD}🧹 >>> 4. gh-pages 브랜치의 기존 *추적 중인* 파일들을 삭제합니다 (단, .nojekyll 파일은 제외).${RESET}"
 echo -e "      (ℹ️ node_modules 등 unversioned 파일은 삭제되지 않습니다.)"
 # git ls-files -z : 추적 중인 파일 목록을 null 문자로 구분하여 출력 (파일명에 공백 등 포함 가능)
+# grep -z -v -e '^\.nojekyll$' : null 문자로 구분된 입력에서 정확히 '.nojekyll'인 항목을 제외(-v)
 # xargs -0 --no-run-if-empty : null 문자로 구분된 입력을 받아 명령 실행 (입력 없으면 실행 안 함)
 # rm -rf -- : 파일 및 디렉토리 강제 삭제 (-- 뒤는 옵션이 아닌 파일명임을 명시)
-git ls-files -z | xargs -0 --no-run-if-empty rm -rf --
-echo -e "✅ 기존 추적 파일 삭제 완료."
+git ls-files -z | grep -z -v -e '^\.nojekyll$' | xargs -0 --no-run-if-empty rm -rf --
+echo -e "✅ 기존 추적 파일 삭제 완료 (.nojekyll 제외)."
 
 
 # 5. 빌드 결과물(.output/public 안의 내용)을 gh-pages 브랜치 루트로 복사
@@ -136,6 +137,7 @@ echo -e "✅ 빌드 결과물 복사 완료."
 
 # 6. 변경된 모든 파일 스테이징 (git add .)
 #    (5번 단계에서 복사된 .gitignore 파일 덕분에 node_modules 등은 자동으로 제외됨)
+#    (만약 4단계에서 .nojekyll 파일이 보존되었다면, 이 단계에서 다시 스테이징됨)
 echo -e "\n${BOLD}➕ >>> 6. 변경된 모든 파일을 스테이징합니다 (git add .).${RESET}"
 git add .
 echo -e "✅ 파일 스테이징 완료."
