@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full max-w-2xl mx-auto flex flex-col space-y-4 p-4">
+  <div class="w-full max-w-2xl mx-auto flex flex-col space-y-4 p-4 bg-zinc-900 text-white">
 
     <!-- Canvas Container -->
     <div class="self-center border border-gray-300" ref="canvasContainerRef" id="canvas-container" :style="{ width: `${canvasWidth}px`, height: `${canvasHeight}px` }">
@@ -10,23 +10,23 @@
       <div class="grid grid-cols-2 gap-x-8 gap-y-4 items-center justify-items-stretch">
         <!-- e1.x Slider -->
         <div class="flex flex-col">
-          <label for="slider_e1x" class="text-sm font-medium text-gray-700">e₁.x: {{ slider_e1x_val.toFixed(1) }}</label>
+          <label for="slider_e1x" class="text-sm font-medium">e₁.x: {{ slider_e1x_val.toFixed(1) }}</label>
           <!-- Tailwind class 'h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700' 가 트랙 스타일 담당 -->
           <input id="slider_e1x" type="range" min="-2" max="2" step="0.1" v-model.number="slider_e1x_val" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"/>
         </div>
         <!-- e2.x Slider -->
         <div class="flex flex-col">
-          <label for="slider_e2x" class="text-sm font-medium text-gray-700">e₂.x: {{ slider_e2x_val.toFixed(1) }}</label>
+          <label for="slider_e2x" class="text-sm font-medium">e₂.x: {{ slider_e2x_val.toFixed(1) }}</label>
           <input id="slider_e2x" type="range" min="-2" max="2" step="0.1" v-model.number="slider_e2x_val" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"/>
         </div>
         <!-- e1.y Slider -->
         <div class="flex flex-col">
-          <label for="slider_e1y" class="text-sm font-medium text-gray-700">e₁.y: {{ slider_e1y_val.toFixed(1) }}</label>
+          <label for="slider_e1y" class="text-sm font-medium">e₁.y: {{ slider_e1y_val.toFixed(1) }}</label>
           <input id="slider_e1y" type="range" min="-2" max="2" step="0.1" v-model.number="slider_e1y_val" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"/>
         </div>
         <!-- e2.y Slider -->
         <div class="flex flex-col">
-          <label for="slider_e2y" class="text-sm font-medium text-gray-700">e₂.y: {{ slider_e2y_val.toFixed(1) }}</label>
+          <label for="slider_e2y" class="text-sm font-medium">e₂.y: {{ slider_e2y_val.toFixed(1) }}</label>
           <input id="slider_e2y" type="range" min="-2" max="2" step="0.1" v-model.number="slider_e2y_val" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"/>
         </div>
       </div>
