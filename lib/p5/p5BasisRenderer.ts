@@ -164,7 +164,7 @@ export class P5BasisRenderer implements IVisualizationRenderer {
                 p.rotate(-angle); // 회전 복원
 
                 // 라벨 위치 계산 및 그리기
-                const labelOffsetBase = p.createVector(arrowSize * 1.8, 0);
+                const labelOffsetBase = p.createVector().set(arrowSize * 1.8, 0); // .set() 사용
                 const rotatedOffset = labelOffsetBase.rotate(angle);
                 if (!isP5VectorValidForDrawing(rotatedOffset)) { p.pop(); return; }
 
@@ -187,12 +187,12 @@ export class P5BasisRenderer implements IVisualizationRenderer {
                 canvas.parent(this.container); // 부모 컨테이너에 캔버스 추가
 
                 // 내부 p5 벡터 초기화
-                this.i_hat = p.createVector(1, 0);
-                this.j_hat = p.createVector(0, 1);
-                this.e1 = p.createVector(1, 0); // 초기값
-                this.e2 = p.createVector(0, 1); // 초기값
-                this.epsilon1 = p.createVector(1, 0); // 초기값
-                this.epsilon2 = p.createVector(0, 1); // 초기값
+                this.i_hat = p.createVector().set(1, 0); // .set() 사용
+                this.j_hat = p.createVector().set(0, 1); // .set() 사용
+                this.e1 = p.createVector().set(1, 0);    // .set() 사용
+                this.e2 = p.createVector().set(0, 1);    // .set() 사용
+                this.epsilon1 = p.createVector().set(1, 0); // .set() 사용
+                this.epsilon2 = p.createVector().set(0, 1); // .set() 사용
 
                 // GridRenderer 인스턴스 생성 (생성된 p5 인스턴스 'p' 전달)
                 this.standardGrid = new GridRenderer(p, GRID_RANGE, SCALE_FACTOR);
