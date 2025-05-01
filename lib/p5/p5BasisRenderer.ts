@@ -101,7 +101,7 @@ class GridRenderer {
  * IVisualizationRenderer 인터페이스의 p5.js 구현체.
  * Basis 벡터와 그리드를 p5.js를 사용하여 캔버스에 렌더링합니다.
  */
-export class P5BasisRenderer implements IVisualizationRenderer {
+export class P5BasisRenderer implements IVisualizationRenderer<BasisVisualizationState> {
     private p5Instance: P5 | null = null;
     private container: HTMLElement | null = null;
     private width: number = 0;

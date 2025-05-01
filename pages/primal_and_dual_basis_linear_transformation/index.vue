@@ -65,9 +65,6 @@ import 'katex/dist/katex.min.css'; // KaTeX CSS import
 // --- Constants ---
 import { CANVAS_WIDTH, CANVAS_HEIGHT } from '@/config/constants';
 
-// --- 비즈니스 로직 (상태 계산) ---
-import { useBasisTransformation } from '@/composables/useBasisTransformation';
-
 // --- KaTeX 렌더링 ---
 import { updateInfoDOM } from '@/lib/katex/renderer';
 
@@ -95,7 +92,7 @@ const {
 } = useBasisTransformation();
 
 // --- 렌더러 인스턴스 ---
-const renderer = shallowRef<IVisualizationRenderer | null>(null);
+const renderer = shallowRef<IVisualizationRenderer<BasisVisualizationState> | null>(null);
 
 // --- 캔버스 크기 (상수로 관리) ---
 const canvasWidth = ref(CANVAS_WIDTH);
