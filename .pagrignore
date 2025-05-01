@@ -1,0 +1,7 @@
+public/
+server/
+.gitignore
+.git
+deploy.sh
+package-lock.json
+tsconfig.json
