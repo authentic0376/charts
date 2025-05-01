@@ -4,6 +4,7 @@
 - 정적 사이트 생성(Static Site Generation, SSG)
   - `npm run generate`
   - `.output/public` 폴더의 내용물을 배포하면 된다
+  - 위의 과정을 `./deploy.sh` 로 한번에 가능
 
 ## Github Page 관리
 - `main` 브랜치에 소스코드 저장
@@ -25,10 +26,4 @@
   ```
 
 ## tailwindcss
-- https://tailwindcss.nuxtjs.org/getting-started/installation
-  ```
-  npx nuxi@latest module add tailwindcss
-  ```
-  `npm install` 로 설치하면 module이 nuxt.config.ts 에 추가가 안되니까 `npx nuxi` 이용
-- `asset/main.css` 등은 생성도 안되고 만들 필요도 없다.
-- `tailwind.config.ts` 은 필요하면 `npx tailwindcss init`
+- tailwind 공식사이트 방식으로 설치. tailwind module 설치 x 
