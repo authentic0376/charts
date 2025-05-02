@@ -134,12 +134,9 @@ import "katex/dist/katex.min.css" // KaTeX CSS import
 // --- Constants ---
 import { CANVAS_WIDTH, CANVAS_HEIGHT } from "@/config/constants"
 
-// --- Composables ---
-import { useBasisTransformation } from "@/composables/useBasisTransformation"
-import { useP5BasisRenderer } from "@/composables/useP5BasisRenderer" // *** 수정: 렌더러 Composable 임포트
-
 // --- KaTeX 렌더링 ---
 import { updateInfoDOM } from "@/lib/katex/renderer"
+import { P5BasisRenderer } from "@/lib/p5/p5BasisRenderer"
 
 // --- 인터페이스 ---
 import type { BasisVisualizationState } from "@/interfaces/rendering/BasisVisualizationState"
@@ -186,11 +183,16 @@ const visualizationState = computed(
 
 // *** 추가: 렌더러 관리 Composable 사용 ***
 // onMounted, onUnmounted, renderer 생성/소멸 로직은 Composable 내부로 이동됨
-const { isInitialized: isRendererInitialized } = useP5BasisRenderer(
+const { isInitialized: isRendererInitialized } = useP5Renderer<
+  BasisVisualizationState,
+  P5BasisRenderer
+>(
   canvasContainerRef,
   canvasWidth,
   canvasHeight,
   visualizationState, // computed ref 전달
+  P5BasisRenderer,
+  "P5BasisRenderer",
 )
 
 // --- 제거: Lifecycle Hooks (onMounted, onUnmounted) 에서 렌더러 직접 관리하는 코드 ---

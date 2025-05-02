@@ -31,11 +31,7 @@
 import { ref, computed, watch, onMounted } from "vue" // shallowRef, onUnmounted, nextTick 제거
 import type { ShannonVisualizationState } from "@/interfaces/rendering/ShannonVisualizationState"
 import * as constants from "@/config/shannonConstants"
-// --- Composables ---
-import { useShannonSampling } from "@/composables/useShannonSampling"
-import { useP5ShannonRenderer } from "@/composables/useP5ShannonRenderer" // *** 수정: 렌더러 Composable 임포트
-// --- 제거: import type {IVisualizationRenderer} from "~/interfaces/rendering/IVisualizationRenderer";
-
+import { P5ShannonRenderer } from "@/lib/p5/p5ShannonRenderer"
 // --- Refs ---
 const canvasContainerRef = ref<HTMLDivElement | null>(null)
 // --- 제거: const renderer = shallowRef<IVisualizationRenderer<ShannonVisualizationState> | null>(null);
@@ -60,13 +56,17 @@ const visualizationState = computed(
 )
 
 // *** 추가: 렌더러 관리 Composable 사용 ***
-const { isInitialized: isRendererInitialized, resizeRenderer } =
-  useP5ShannonRenderer(
-    canvasContainerRef,
-    canvasWidth,
-    canvasHeight,
-    visualizationState, // 계산된 상태 Ref 전달
-  )
+const { isInitialized: isRendererInitialized, resizeRenderer } = useP5Renderer<
+  ShannonVisualizationState,
+  P5ShannonRenderer
+>(
+  canvasContainerRef,
+  canvasWidth,
+  canvasHeight,
+  visualizationState, // 계산된 상태 Ref 전달
+  P5ShannonRenderer, // *** 사용할 렌더러 클래스의 생성자 전달 ***
+  "P5ShannonRenderer", // 로깅 이름 전달 (선택적)
+)
 
 // --- 제거: Lifecycle Hooks (onMounted, onUnmounted) 에서 렌더러 직접 관리 코드 ---
 /*
