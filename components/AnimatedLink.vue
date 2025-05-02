@@ -11,15 +11,15 @@ defineProps({
   // 'to' for the link destination (still required)
   to: {
     type: String,
-    required: true
+    required: true,
   },
   // 'text' for the link display text (now optional)
   text: {
     type: String,
     // No longer required: true
     // You could add default: '' if you prefer an empty string over undefined when not passed
-  }
-});
+  },
+})
 </script>
 
 <style scoped>
@@ -31,7 +31,6 @@ defineProps({
   cursor: pointer;
   /* font-size is inherited or set by link--elara */
   position: relative;
-  white-space: nowrap;
   text-decoration: none; /* Add this to remove default underline */
   color: inherit; /* Inherit color from parent by default */
 }
@@ -48,7 +47,7 @@ defineProps({
 }
 
 .link::before {
-  content: '';
+  content: "";
   /* show by default */
 }
 
@@ -62,21 +61,36 @@ defineProps({
 
 .link--elara::before {
   transform-origin: 50% 100%;
-  transition: clip-path 0.3s, transform 0.3s cubic-bezier(0.2, 1, 0.8, 1);
-  clip-path: polygon(0% 0%, 0% 100%, 0 100%, 0 0, 100% 0, 100% 100%, 0 100%, 0 100%, 100% 100%, 100% 0%);
+  transition:
+    clip-path 0.3s,
+    transform 0.3s cubic-bezier(0.2, 1, 0.8, 1);
+  clip-path: polygon(
+    0% 0%,
+    0% 100%,
+    0 100%,
+    0 0,
+    100% 0,
+    100% 100%,
+    0 100%,
+    0 100%,
+    100% 100%,
+    100% 0%
+  );
 }
 
 .link--elara:hover::before {
   transform: translate3d(0, 2px, 0) scale3d(1.08, 3, 1);
-  clip-path: polygon(0% 0%, 0% 100%, 50% 100%, 50% 0, 50% 0, 50% 100%, 50% 100%, 0 100%, 100% 100%, 100% 0%);
-}
-
-.link--elara span {
-  display: inline-block;
-  transition: transform 0.3s cubic-bezier(0.2, 1, 0.8, 1);
-}
-
-.link--elara:hover span {
-  transform: translate3d(0, -2px, 0);
+  clip-path: polygon(
+    0% 0%,
+    0% 100%,
+    50% 100%,
+    50% 0,
+    50% 0,
+    50% 100%,
+    50% 100%,
+    0 100%,
+    100% 100%,
+    100% 0%
+  );
 }
 </style>

@@ -19,6 +19,8 @@
     "vue-router": "^4.5.1"
   },
   "devDependencies": {
-    "@types/p5": "^1.7.6"
+    "@types/p5": "^1.7.6",
+    "prettier": "^3.5.3",
+    "prettier-plugin-tailwindcss": "^0.6.11"
   }
 }
