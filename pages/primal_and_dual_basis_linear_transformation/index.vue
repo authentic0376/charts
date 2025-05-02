@@ -1,129 +1,131 @@
 <template>
   <div class="mx-auto flex w-full max-w-2xl flex-col space-y-4 p-4">
     <!-- Canvas Container (렌더러 Composable에 ref 전달) -->
-    <div
-      class="self-center border border-gray-300"
-      ref="canvasContainerRef"
-      id="canvas-container"
-      :style="{ width: `${canvasWidth}px`, height: `${canvasHeight}px` }"
-    >
-      <!-- p5 캔버스가 여기에 생성됩니다 -->
+    <ClientOnly>
       <div
-        v-if="!isRendererInitialized"
-        class="flex h-full items-center justify-center text-gray-500"
+        class="self-center border border-gray-300"
+        ref="canvasContainerRef"
+        id="canvas-container"
+        :style="{ width: `${canvasWidth}px`, height: `${canvasHeight}px` }"
       >
-        Initializing visualization...
-      </div>
-    </div>
-
-    <!-- Controls Container (이전과 동일) -->
-    <div id="controls-container">
-      <div
-        class="grid grid-cols-2 items-center justify-items-stretch gap-x-8 gap-y-4"
-      >
-        <!-- e1.x Slider -->
-        <div class="flex flex-col">
-          <label for="slider_e1x" class="text-sm font-medium"
-            >e₁.x: {{ slider_e1x_val.toFixed(1) }}</label
-          >
-          <input
-            id="slider_e1x"
-            type="range"
-            min="-2"
-            max="2"
-            step="0.1"
-            v-model.number="slider_e1x_val"
-            class="h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-200 dark:bg-gray-700"
-          />
-        </div>
-        <!-- e2.x Slider -->
-        <div class="flex flex-col">
-          <label for="slider_e2x" class="text-sm font-medium"
-            >e₂.x: {{ slider_e2x_val.toFixed(1) }}</label
-          >
-          <input
-            id="slider_e2x"
-            type="range"
-            min="-2"
-            max="2"
-            step="0.1"
-            v-model.number="slider_e2x_val"
-            class="h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-200 dark:bg-gray-700"
-          />
-        </div>
-        <!-- e1.y Slider -->
-        <div class="flex flex-col">
-          <label for="slider_e1y" class="text-sm font-medium"
-            >e₁.y: {{ slider_e1y_val.toFixed(1) }}</label
-          >
-          <input
-            id="slider_e1y"
-            type="range"
-            min="-2"
-            max="2"
-            step="0.1"
-            v-model.number="slider_e1y_val"
-            class="h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-200 dark:bg-gray-700"
-          />
-        </div>
-        <!-- e2.y Slider -->
-        <div class="flex flex-col">
-          <label for="slider_e2y" class="text-sm font-medium"
-            >e₂.y: {{ slider_e2y_val.toFixed(1) }}</label
-          >
-          <input
-            id="slider_e2y"
-            type="range"
-            min="-2"
-            max="2"
-            step="0.1"
-            v-model.number="slider_e2y_val"
-            class="h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-200 dark:bg-gray-700"
-          />
-        </div>
-      </div>
-      <!-- Reset Button -->
-      <div class="mt-4 flex justify-end">
-        <button
-          @click="resetBasis"
-          class="rounded bg-blue-500 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700"
+        <!-- p5 캔버스가 여기에 생성됩니다 -->
+        <div
+          v-if="!isRendererInitialized"
+          class="flex h-full items-center justify-center text-gray-500"
         >
-          Reset Basis
-        </button>
+          Initializing visualization...
+        </div>
       </div>
-    </div>
 
-    <!-- KaTeX Info Display Area (이전과 동일) -->
-    <div
-      id="info-container"
-      class="mt-4 grid grid-cols-2 gap-4 border-t pt-4 text-center text-sm"
-    >
-      <div class="info-section">
-        <h3 class="mb-2 text-lg font-semibold">Primal Basis</h3>
-        <div class="flex items-center justify-around">
-          <span ref="el_primal_e1"></span><span ref="el_primal_e2"></span>
+      <!-- Controls Container (이전과 동일) -->
+      <div id="controls-container">
+        <div
+          class="grid grid-cols-2 items-center justify-items-stretch gap-x-8 gap-y-4"
+        >
+          <!-- e1.x Slider -->
+          <div class="flex flex-col">
+            <label for="slider_e1x" class="text-sm font-medium"
+              >e₁.x: {{ slider_e1x_val.toFixed(1) }}</label
+            >
+            <input
+              id="slider_e1x"
+              type="range"
+              min="-2"
+              max="2"
+              step="0.1"
+              v-model.number="slider_e1x_val"
+              class="h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-200 dark:bg-gray-700"
+            />
+          </div>
+          <!-- e2.x Slider -->
+          <div class="flex flex-col">
+            <label for="slider_e2x" class="text-sm font-medium"
+              >e₂.x: {{ slider_e2x_val.toFixed(1) }}</label
+            >
+            <input
+              id="slider_e2x"
+              type="range"
+              min="-2"
+              max="2"
+              step="0.1"
+              v-model.number="slider_e2x_val"
+              class="h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-200 dark:bg-gray-700"
+            />
+          </div>
+          <!-- e1.y Slider -->
+          <div class="flex flex-col">
+            <label for="slider_e1y" class="text-sm font-medium"
+              >e₁.y: {{ slider_e1y_val.toFixed(1) }}</label
+            >
+            <input
+              id="slider_e1y"
+              type="range"
+              min="-2"
+              max="2"
+              step="0.1"
+              v-model.number="slider_e1y_val"
+              class="h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-200 dark:bg-gray-700"
+            />
+          </div>
+          <!-- e2.y Slider -->
+          <div class="flex flex-col">
+            <label for="slider_e2y" class="text-sm font-medium"
+              >e₂.y: {{ slider_e2y_val.toFixed(1) }}</label
+            >
+            <input
+              id="slider_e2y"
+              type="range"
+              min="-2"
+              max="2"
+              step="0.1"
+              v-model.number="slider_e2y_val"
+              class="h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-200 dark:bg-gray-700"
+            />
+          </div>
+        </div>
+        <!-- Reset Button -->
+        <div class="mt-4 flex justify-end">
+          <button
+            @click="resetBasis"
+            class="rounded bg-blue-500 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700"
+          >
+            Reset Basis
+          </button>
         </div>
       </div>
-      <div class="info-section">
-        <h3 class="mb-2 text-lg font-semibold">Transformation Matrix</h3>
-        <div class="flex items-center justify-around">
-          <span ref="el_matrix_m"></span><span ref="el_determinant"></span>
+
+      <!-- KaTeX Info Display Area (이전과 동일) -->
+      <div
+        id="info-container"
+        class="mt-4 grid grid-cols-2 gap-4 border-t pt-4 text-center text-sm"
+      >
+        <div class="info-section">
+          <h3 class="mb-2 text-lg font-semibold">Primal Basis</h3>
+          <div class="flex items-center justify-around">
+            <span ref="el_primal_e1"></span><span ref="el_primal_e2"></span>
+          </div>
+        </div>
+        <div class="info-section">
+          <h3 class="mb-2 text-lg font-semibold">Transformation Matrix</h3>
+          <div class="flex items-center justify-around">
+            <span ref="el_matrix_m"></span><span ref="el_determinant"></span>
+          </div>
+        </div>
+        <div class="info-section">
+          <h3 class="mb-2 text-lg font-semibold">Dual Basis</h3>
+          <div class="flex items-center justify-around">
+            <span ref="el_dual_epsilon1"></span
+            ><span ref="el_dual_epsilon2"></span>
+          </div>
+        </div>
+        <div class="info-section">
+          <h3 class="mb-2 text-lg font-semibold">Inverse Matrix M⁻¹</h3>
+          <div class="flex items-center justify-around">
+            <span ref="el_matrix_m_inv"></span>
+          </div>
         </div>
       </div>
-      <div class="info-section">
-        <h3 class="mb-2 text-lg font-semibold">Dual Basis</h3>
-        <div class="flex items-center justify-around">
-          <span ref="el_dual_epsilon1"></span
-          ><span ref="el_dual_epsilon2"></span>
-        </div>
-      </div>
-      <div class="info-section">
-        <h3 class="mb-2 text-lg font-semibold">Inverse Matrix M⁻¹</h3>
-        <div class="flex items-center justify-around">
-          <span ref="el_matrix_m_inv"></span>
-        </div>
-      </div>
-    </div>
+    </ClientOnly>
   </div>
 </template>
 

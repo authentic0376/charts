@@ -1,30 +1,32 @@
 <template>
   <!-- 마우스 이벤트는 여전히 컨테이너에서 감지 -->
-  <div
-    ref="canvasContainerRef"
-    class="shannon-canvas-container"
-    :style="{
-      width: `${canvasWidth}px`,
-      height: `${canvasHeight}px`,
-      cursor: 'ew-resize',
-      margin: 'auto',
-    }"
-    @mousemove="handleMouseMove"
-    @mouseleave="handleMouseLeave"
-  >
-    <!-- 렌더러 초기화 상태 표시 (선택적) -->
+  <ClientOnly>
     <div
-      v-if="!isRendererInitialized"
-      class="flex h-full items-center justify-center text-gray-500"
+      ref="canvasContainerRef"
+      class="shannon-canvas-container"
+      :style="{
+        width: `${canvasWidth}px`,
+        height: `${canvasHeight}px`,
+        cursor: 'ew-resize',
+        margin: 'auto',
+      }"
+      @mousemove="handleMouseMove"
+      @mouseleave="handleMouseLeave"
     >
-      Loading Shannon Sampling Visualization...
+      <!-- 렌더러 초기화 상태 표시 (선택적) -->
+      <div
+        v-if="!isRendererInitialized"
+        class="flex h-full items-center justify-center text-gray-500"
+      >
+        Loading Shannon Sampling Visualization...
+      </div>
+      <!-- Canvas will be created here by p5, managed by the composable -->
     </div>
-    <!-- Canvas will be created here by p5, managed by the composable -->
-  </div>
-  <!-- Optional: Display Fs value (from samplingState) -->
-  <!-- <div style="text-align: center; margin-top: 10px;">
-      Current Fs: {{ samplingState.state.samplingFrequency.toFixed(2) }} Hz
-  </div> -->
+    <!-- Optional: Display Fs value (from samplingState) -->
+    <!-- <div style="text-align: center; margin-top: 10px;">
+        Current Fs: {{ samplingState.state.samplingFrequency.toFixed(2) }} Hz
+    </div> -->
+  </ClientOnly>
 </template>
 
 <script setup lang="ts">
