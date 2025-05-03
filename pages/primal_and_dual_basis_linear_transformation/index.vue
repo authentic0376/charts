@@ -114,19 +114,19 @@
           <span ref="el_matrix_m"></span><span ref="el_determinant"></span>
         </div>
       </div>
-      <!-- Dual Basis Section -->
-      <div class="info-section">
-        <h3 class="mb-2 text-lg font-semibold">Dual Basis</h3>
-        <div class="flex items-center justify-around">
-          <span ref="el_dual_epsilon1"></span
-          ><span ref="el_dual_epsilon2"></span>
-        </div>
-      </div>
       <!-- Inverse Matrix Section -->
       <div class="info-section">
         <h3 class="mb-2 text-lg font-semibold">Inverse Matrix M⁻¹</h3>
         <div class="flex items-center justify-around">
           <span ref="el_matrix_m_inv"></span>
+        </div>
+      </div>
+      <!-- Dual Basis Section -->
+      <div class="info-section">
+        <h3 class="mb-2 text-lg font-semibold">Dual Basis</h3>
+        <div class="flex flex-col items-center justify-around">
+          <span ref="el_dual_epsilon1"></span
+          ><span ref="el_dual_epsilon2"></span>
         </div>
       </div>
     </div>
