@@ -1,1 +1,0 @@
-import{c as a,a as t,o as n}from"./1UegQQjt.js";const s={__name:"index",setup(r){return(l,e)=>(n(),a("div",null,e[0]||(e[0]=[t("h1",null,"테스트 수정",-1),t("p",null,"test dir page",-1)])))}};export{s as default};
