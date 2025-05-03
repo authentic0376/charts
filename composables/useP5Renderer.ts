@@ -20,9 +20,15 @@ interface RendererConstructor<
   new (): TRenderer // 인자 없는 생성자 시그니처
 }
 
+// 동적으로 렌더러 생성자를 로드하는 함수 타입
+type RendererImportFn<
+  TState,
+  TRenderer extends IVisualizationRenderer<TState>,
+> = () => Promise<RendererConstructor<TState, TRenderer>>
+
 /**
  * 특정 p5.js 기반 시각화 렌더러의 생성, 설정, 소멸 및 상태 기반 렌더링을
- * 관리하는 제네릭 Composable 함수.
+ * 관리하는 제네릭 Composable 함수. 렌더러 클래스를 동적으로 임포트합니다.
  *
  * @template TState - 렌더링에 사용될 상태 객체의 타입.
  * @template TRenderer - IVisualizationRenderer<TState>를 구현하는 렌더러 클래스 타입.
@@ -30,7 +36,7 @@ interface RendererConstructor<
  * @param initialWidth - 캔버스의 초기 너비 Ref.
  * @param initialHeight - 캔버스의 초기 높이 Ref.
  * @param stateToWatch - 렌더링에 사용될 TState 타입의 상태를 제공하는 Ref.
- * @param RendererClass - 사용할 렌더러 클래스의 생성자 함수.
+ * @param RendererImportFn - 사용할 렌더러 클래스의 생성자를 비동기적으로 반환하는 함수.
  * @param rendererName - 로깅을 위한 렌더러 이름 (선택적).
  * @returns 렌더러 초기화 상태 Ref 및 리사이즈 함수.
  */
@@ -42,7 +48,7 @@ export function useP5Renderer<
   initialWidth: Ref<number>,
   initialHeight: Ref<number>,
   stateToWatch: Ref<TState>,
-  RendererClass: RendererConstructor<TState, TRenderer>, // 생성자 주입
+  RendererImportFn: RendererImportFn<TState, TRenderer>, // 생성자 대신 동적 임포트 함수 주입
   rendererName: string = "P5Renderer", // 기본 이름 설정
 ) {
   const renderer = shallowRef<TRenderer | null>(null) // TRenderer 타입 사용
@@ -50,6 +56,7 @@ export function useP5Renderer<
 
   // 렌더러 초기화 함수
   const initialize = async () => {
+    // 브라우저 환경에서만 실행하고, 컨테이너가 존재하며, 아직 렌더러가 초기화되지 않았을 때
     if (
       typeof window !== "undefined" &&
       containerRef.value &&
@@ -57,25 +64,41 @@ export function useP5Renderer<
     ) {
       try {
         console.log(`Attempting to initialize ${rendererName}...`)
-        // 주입된 생성자를 사용하여 인스턴스 생성
-        const p5RendererInstance = new RendererClass()
+
+        // 1. 동적 임포트 함수를 호출하여 렌더러 생성자를 비동기적으로 로드
+        const RendererConstructor = await RendererImportFn()
+        if (!RendererConstructor) {
+          throw new Error(`Failed to dynamically import ${rendererName} class.`)
+        }
+
+        // 2. 로드된 생성자를 사용하여 인스턴스 생성
+        const p5RendererInstance = new RendererConstructor()
+
+        // 3. 렌더러 설정 실행
         await p5RendererInstance.setup(
           containerRef.value,
           initialWidth.value,
           initialHeight.value,
         )
+
+        // 4. 상태 업데이트
         renderer.value = p5RendererInstance
         isInitialized.value = true
         console.log(`${rendererName} Initialized successfully via Composable.`)
       } catch (error) {
         console.error(`Failed to setup ${rendererName} via Composable:`, error)
+        renderer.value = null // 실패 시 null로 설정
         isInitialized.value = false
       }
     } else if (renderer.value) {
       console.log(`${rendererName} already initialized.`)
+    } else if (typeof window === "undefined") {
+      console.log(
+        `${rendererName} initialization skipped on server-side rendering.`,
+      )
     } else {
       console.warn(
-        `${rendererName} initialization prerequisites not met (window, container, or already initialized).`,
+        `${rendererName} initialization prerequisites not met (container missing?).`,
       )
     }
   }
@@ -93,6 +116,7 @@ export function useP5Renderer<
 
   // 컴포넌트 라이프사이클과 연동
   onMounted(() => {
+    // nextTick을 사용하여 DOM이 완전히 준비된 후 초기화 시도
     nextTick(initialize)
   })
   onUnmounted(cleanup)
@@ -116,20 +140,22 @@ export function useP5Renderer<
     (ready) => {
       if (ready && renderer.value) {
         console.log(`${rendererName} is ready, triggering initial draw.`)
-        renderer.value.draw(stateToWatch.value) // 초기 상태 값으로 첫 draw 호출
+        // 초기 상태 값으로 첫 draw 호출
+        // stateToWatch의 현재 값으로 그리기
+        renderer.value.draw(stateToWatch.value)
       }
     },
-    { immediate: false },
+    { immediate: false }, // 초기화 후에만 실행되도록 immediate: false 유지
   )
 
   // 리사이즈 처리 함수 (렌더러가 resize 메소드를 지원하는 경우에만 동작)
   const resizeRenderer = (width: number, height: number) => {
     // renderer.value?.resize는 optional chaining과 같습니다.
-    // resize 메소드가 존재하면 호출하고, 없으면 아무것도 하지 않습니다.
+    // resize 메소드가 존재하고 렌더러가 초기화 되었으면 호출하고, 없으면 아무것도 하지 않습니다.
     if (renderer.value?.resize && isInitialized.value) {
       console.log(`Resizing ${rendererName} to ${width}x${height}`)
       renderer.value.resize(width, height)
-      // resize 후 다시 그릴 필요가 있다면 여기서 draw 호출 (보통 resize 내부에서 처리)
+      // resize 후 다시 그릴 필요가 있다면 여기서 draw 호출 (보통 resize 내부에서 처리하지만, 필요시 추가)
       // renderer.value.draw(stateToWatch.value);
     } else if (isInitialized.value) {
       console.warn(
