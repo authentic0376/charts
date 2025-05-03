@@ -38,7 +38,7 @@ type RendererImportFn<
  * @param stateToWatch - 렌더링에 사용될 TState 타입의 상태를 제공하는 Ref.
  * @param RendererImportFn - 사용할 렌더러 클래스의 생성자를 비동기적으로 반환하는 함수.
  * @param rendererName - 로깅을 위한 렌더러 이름 (선택적).
- * @returns 렌더러 초기화 상태 Ref 및 리사이즈 함수.
+ * @returns 렌더러 초기화 상태 Ref, 리사이즈 함수, 그리고 렌더러 인스턴스 Ref.
  */
 export function useP5Renderer<
   TState,
@@ -47,16 +47,14 @@ export function useP5Renderer<
   containerRef: Ref<HTMLElement | null>,
   initialWidth: Ref<number>,
   initialHeight: Ref<number>,
-  stateToWatch: Ref<TState>,
-  RendererImportFn: RendererImportFn<TState, TRenderer>, // 생성자 대신 동적 임포트 함수 주입
-  rendererName: string = "P5Renderer", // 기본 이름 설정
+  stateToWatch: Ref<TState>, // 상태 변경 감지용 watch는 유지
+  RendererImportFn: RendererImportFn<TState, TRenderer>,
+  rendererName: string = "P5Renderer",
 ) {
-  const renderer = shallowRef<TRenderer | null>(null) // TRenderer 타입 사용
+  const renderer = shallowRef<TRenderer | null>(null) // renderer 자체를 노출
   const isInitialized = ref(false)
 
-  // 렌더러 초기화 함수
   const initialize = async () => {
-    // 브라우저 환경에서만 실행하고, 컨테이너가 존재하며, 아직 렌더러가 초기화되지 않았을 때
     if (
       typeof window !== "undefined" &&
       containerRef.value &&
@@ -64,30 +62,29 @@ export function useP5Renderer<
     ) {
       try {
         console.log(`Attempting to initialize ${rendererName}...`)
-
-        // 1. 동적 임포트 함수를 호출하여 렌더러 생성자를 비동기적으로 로드
         const RendererConstructor = await RendererImportFn()
         if (!RendererConstructor) {
           throw new Error(`Failed to dynamically import ${rendererName} class.`)
         }
-
-        // 2. 로드된 생성자를 사용하여 인스턴스 생성
         const p5RendererInstance = new RendererConstructor()
 
-        // 3. 렌더러 설정 실행
+        // Setup the renderer instance
         await p5RendererInstance.setup(
           containerRef.value,
           initialWidth.value,
           initialHeight.value,
         )
 
-        // 4. 상태 업데이트
+        // Store the instance and set initialized flag ONLY
         renderer.value = p5RendererInstance
-        isInitialized.value = true
+        isInitialized.value = true // <-- Set flag to true
         console.log(`${rendererName} Initialized successfully via Composable.`)
+
+        // --- REMOVED initial draw call from here ---
+        // Initial draw will be triggered by the component watching isInitialized
       } catch (error) {
         console.error(`Failed to setup ${rendererName} via Composable:`, error)
-        renderer.value = null // 실패 시 null로 설정
+        renderer.value = null
         isInitialized.value = false
       }
     } else if (renderer.value) {
@@ -103,7 +100,6 @@ export function useP5Renderer<
     }
   }
 
-  // 렌더러 정리 함수
   const cleanup = () => {
     if (renderer.value) {
       console.log(`Cleaning up ${rendererName}...`)
@@ -114,48 +110,34 @@ export function useP5Renderer<
     }
   }
 
-  // 컴포넌트 라이프사이클과 연동
   onMounted(() => {
-    // nextTick을 사용하여 DOM이 완전히 준비된 후 초기화 시도
+    // Ensure DOM is ready before initializing
     nextTick(initialize)
   })
   onUnmounted(cleanup)
 
-  // 주입된 상태(stateToWatch) 변경 감지 및 렌더링 호출
+  // Watch for state changes *after* initialization for subsequent draws
   watch(
     stateToWatch,
     (newState) => {
-      // 렌더러가 초기화되었을 때만 draw 호출
       if (renderer.value && isInitialized.value) {
+        // Subsequent draws based on state changes
         // console.log(`${rendererName} state changed, triggering draw.`);
-        renderer.value.draw(newState) // TState 타입의 newState 전달
+        renderer.value.draw(newState)
       }
     },
-    { deep: true }, // 객체 내부 값 변경 감지를 위해 deep watch 사용
+    { deep: true, flush: "post" }, // Use 'post' flush to wait for DOM updates if needed
   )
 
-  // 초기화 완료 후 첫 렌더링 트리거
-  watch(
-    isInitialized,
-    (ready) => {
-      if (ready && renderer.value) {
-        console.log(`${rendererName} is ready, triggering initial draw.`)
-        // 초기 상태 값으로 첫 draw 호출
-        // stateToWatch의 현재 값으로 그리기
-        renderer.value.draw(stateToWatch.value)
-      }
-    },
-    { immediate: false }, // 초기화 후에만 실행되도록 immediate: false 유지
-  )
+  // --- REMOVED watch(isInitialized) for initial draw ---
+  // The component (`index.vue`) is now responsible for the initial draw
+  // by watching `isInitialized` and calling `renderer.value.draw`.
 
-  // 리사이즈 처리 함수 (렌더러가 resize 메소드를 지원하는 경우에만 동작)
   const resizeRenderer = (width: number, height: number) => {
-    // renderer.value?.resize는 optional chaining과 같습니다.
-    // resize 메소드가 존재하고 렌더러가 초기화 되었으면 호출하고, 없으면 아무것도 하지 않습니다.
     if (renderer.value?.resize && isInitialized.value) {
       console.log(`Resizing ${rendererName} to ${width}x${height}`)
       renderer.value.resize(width, height)
-      // resize 후 다시 그릴 필요가 있다면 여기서 draw 호출 (보통 resize 내부에서 처리하지만, 필요시 추가)
+      // Optional: Trigger a draw after resize if state hasn't changed
       // renderer.value.draw(stateToWatch.value);
     } else if (isInitialized.value) {
       console.warn(
@@ -164,9 +146,10 @@ export function useP5Renderer<
     }
   }
 
-  // 외부에서는 초기화 상태와 resize 함수 노출
+  // Expose initialization status, resize function, and the renderer instance itself
   return {
     isInitialized,
-    resizeRenderer, // 항상 반환하되, 내부적으로 resize 지원 여부 체크
+    resizeRenderer,
+    renderer, // <-- Expose the renderer instance ref
   }
 }
