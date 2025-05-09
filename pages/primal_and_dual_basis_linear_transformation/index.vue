@@ -1,6 +1,8 @@
 <!-- pages/primal_and_dual_basis_linear_transformation/index.vue -->
 <template>
-  <div class="mx-auto flex w-full max-w-2xl flex-col space-y-4 p-4">
+  <div
+    class="mx-auto flex min-h-screen w-full flex-col items-center justify-center space-y-4 space-x-4 p-4 md:flex-row"
+  >
     <!-- Canvas Container -->
     <div
       class="self-center border border-gray-300"
@@ -22,131 +24,136 @@
       <!-- Canvas는 useP5Renderer/p5BasisRenderer 내부에서 생성됩니다 -->
     </div>
 
-    <!-- Controls Container -->
-    <div id="controls-container">
-      <!-- Basis Sliders Grid -->
-      <h3 class="mb-2 text-lg font-semibold">Basis Vectors (e₁, e₂)</h3>
+    <div>
+      <!-- Controls Container -->
+      <div id="controls-container">
+        <!-- Basis Sliders Grid -->
+        <h3 class="mb-2 text-lg font-semibold">Basis Vectors (e₁, e₂)</h3>
+        <div
+          class="grid grid-cols-2 items-center justify-items-stretch gap-x-8 gap-y-4"
+        >
+          <!-- e1.x Slider -->
+          <div class="flex flex-col">
+            <label for="slider_e1x" class="text-sm font-medium"
+              >e₁.x: {{ slider_e1x_val.toFixed(1) }}</label
+            >
+            <input
+              id="slider_e1x"
+              type="range"
+              min="-2"
+              max="2"
+              step="0.1"
+              v-model.number="slider_e1x_val"
+              class="h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-200 dark:bg-gray-700"
+            />
+          </div>
+          <!-- e2.x Slider -->
+          <div class="flex flex-col">
+            <label for="slider_e2x" class="text-sm font-medium"
+              >e₂.x: {{ slider_e2x_val.toFixed(1) }}</label
+            >
+            <input
+              id="slider_e2x"
+              type="range"
+              min="-2"
+              max="2"
+              step="0.1"
+              v-model.number="slider_e2x_val"
+              class="h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-200 dark:bg-gray-700"
+            />
+          </div>
+          <!-- e1.y Slider -->
+          <div class="flex flex-col">
+            <label for="slider_e1y" class="text-sm font-medium"
+              >e₁.y: {{ slider_e1y_val.toFixed(1) }}</label
+            >
+            <input
+              id="slider_e1y"
+              type="range"
+              min="-2"
+              max="2"
+              step="0.1"
+              v-model.number="slider_e1y_val"
+              class="h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-200 dark:bg-gray-700"
+            />
+          </div>
+          <!-- e2.y Slider -->
+          <div class="flex flex-col">
+            <label for="slider_e2y" class="text-sm font-medium"
+              >e₂.y: {{ slider_e2y_val.toFixed(1) }}</label
+            >
+            <input
+              id="slider_e2y"
+              type="range"
+              min="-2"
+              max="2"
+              step="0.1"
+              v-model.number="slider_e2y_val"
+              class="h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-200 dark:bg-gray-700"
+            />
+          </div>
+        </div>
+
+        <!-- Reset Button -->
+        <div class="mt-4 flex justify-end">
+          <button
+            @click="resetBasisAndVector"
+            class="rounded bg-blue-500 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700"
+          >
+            Reset Basis & Vector
+          </button>
+        </div>
+      </div>
+
+      <!-- KaTeX Info Display Area -->
       <div
-        class="grid grid-cols-2 items-center justify-items-stretch gap-x-8 gap-y-4"
+        id="info-container"
+        class="mt-4 flex flex-col gap-4 border-t pt-4 text-center text-sm text-nowrap"
       >
-        <!-- e1.x Slider -->
-        <div class="flex flex-col">
-          <label for="slider_e1x" class="text-sm font-medium"
-            >e₁.x: {{ slider_e1x_val.toFixed(1) }}</label
+        <!-- Basis transformation -->
+        <div class="info-section grid grid-cols-[1fr_3fr] gap-4">
+          <h3 ref="basis_transformation" class="mb-2 text-lg font-semibold">
+            Primal Basis
+          </h3>
+          <div class="flex items-center justify-around">
+            <span ref="basis_transformation_value"></span>
+          </div>
+        </div>
+        <!-- Dual Basis Transformation -->
+        <div class="info-section grid grid-cols-[1fr_3fr] gap-4">
+          <h3
+            ref="dual_basis_transformation"
+            class="mb-2 text-lg font-semibold"
           >
-          <input
-            id="slider_e1x"
-            type="range"
-            min="-2"
-            max="2"
-            step="0.1"
-            v-model.number="slider_e1x_val"
-            class="h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-200 dark:bg-gray-700"
-          />
+            Transformation Matrix M
+          </h3>
+          <div class="flex items-center justify-around">
+            <span ref="dual_basis_transformation_value"></span>
+          </div>
         </div>
-        <!-- e2.x Slider -->
-        <div class="flex flex-col">
-          <label for="slider_e2x" class="text-sm font-medium"
-            >e₂.x: {{ slider_e2x_val.toFixed(1) }}</label
+        <!-- Inverse Matrix Section -->
+        <div class="info-section grid grid-cols-[1fr_3fr] gap-4">
+          <h3
+            ref="contravariant_component_transformation"
+            class="mb-2 text-lg font-semibold"
           >
-          <input
-            id="slider_e2x"
-            type="range"
-            min="-2"
-            max="2"
-            step="0.1"
-            v-model.number="slider_e2x_val"
-            class="h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-200 dark:bg-gray-700"
-          />
+            Inverse Matrix M⁻¹
+          </h3>
+          <div class="flex items-center justify-around">
+            <span ref="contravariant_component_transformation_value"></span>
+          </div>
         </div>
-        <!-- e1.y Slider -->
-        <div class="flex flex-col">
-          <label for="slider_e1y" class="text-sm font-medium"
-            >e₁.y: {{ slider_e1y_val.toFixed(1) }}</label
+        <!-- Dual Basis Section -->
+        <div class="info-section grid grid-cols-[1fr_3fr] gap-4">
+          <h3
+            ref="covariant_component_transformation"
+            class="mb-2 text-lg font-semibold"
           >
-          <input
-            id="slider_e1y"
-            type="range"
-            min="-2"
-            max="2"
-            step="0.1"
-            v-model.number="slider_e1y_val"
-            class="h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-200 dark:bg-gray-700"
-          />
-        </div>
-        <!-- e2.y Slider -->
-        <div class="flex flex-col">
-          <label for="slider_e2y" class="text-sm font-medium"
-            >e₂.y: {{ slider_e2y_val.toFixed(1) }}</label
-          >
-          <input
-            id="slider_e2y"
-            type="range"
-            min="-2"
-            max="2"
-            step="0.1"
-            v-model.number="slider_e2y_val"
-            class="h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-200 dark:bg-gray-700"
-          />
-        </div>
-      </div>
-
-      <!-- Reset Button -->
-      <div class="mt-4 flex justify-end">
-        <button
-          @click="resetBasisAndVector"
-          class="rounded bg-blue-500 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700"
-        >
-          Reset Basis & Vector
-        </button>
-      </div>
-    </div>
-
-    <!-- KaTeX Info Display Area -->
-    <div
-      id="info-container"
-      class="mt-4 flex flex-col gap-4 border-t pt-4 text-center text-sm text-nowrap"
-    >
-      <!-- Basis transformation -->
-      <div class="info-section grid grid-cols-[1fr_3fr] gap-4">
-        <h3 ref="basis_transformation" class="mb-2 text-lg font-semibold">
-          Primal Basis
-        </h3>
-        <div class="flex items-center justify-around">
-          <span ref="basis_transformation_value"></span>
-        </div>
-      </div>
-      <!-- Dual Basis Transformation -->
-      <div class="info-section grid grid-cols-[1fr_3fr] gap-4">
-        <h3 ref="dual_basis_transformation" class="mb-2 text-lg font-semibold">
-          Transformation Matrix M
-        </h3>
-        <div class="flex items-center justify-around">
-          <span ref="dual_basis_transformation_value"></span>
-        </div>
-      </div>
-      <!-- Inverse Matrix Section -->
-      <div class="info-section grid grid-cols-[1fr_3fr] gap-4">
-        <h3
-          ref="contravariant_component_transformation"
-          class="mb-2 text-lg font-semibold"
-        >
-          Inverse Matrix M⁻¹
-        </h3>
-        <div class="flex items-center justify-around">
-          <span ref="contravariant_component_transformation_value"></span>
-        </div>
-      </div>
-      <!-- Dual Basis Section -->
-      <div class="info-section grid grid-cols-[1fr_3fr] gap-4">
-        <h3
-          ref="covariant_component_transformation"
-          class="mb-2 text-lg font-semibold"
-        >
-          Dual Basis
-        </h3>
-        <div class="flex flex-col items-center justify-around">
-          <span ref="covariant_component_transformation_value"></span>
+            Dual Basis
+          </h3>
+          <div class="flex flex-col items-center justify-around">
+            <span ref="covariant_component_transformation_value"></span>
+          </div>
         </div>
       </div>
     </div>
