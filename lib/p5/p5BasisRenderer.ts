@@ -1,8 +1,9 @@
 // lib/p5/p5BasisRenderer.ts
-import P5 from "p5" // p5 생성자(값) 및 타입 모두 필요
+import P5 from "p5"
 import type { IVisualizationRenderer } from "@/interfaces/rendering/IVisualizationRenderer"
 import type { BasisVisualizationState } from "@/interfaces/rendering/BasisVisualizationState"
 import { SCALE_FACTOR, GRID_RANGE } from "@/config/constants"
+import type { Ref } from "vue" // Ref 타입을 사용하기 위해 import
 
 // --- 헬퍼 함수들 ---
 const isVectorDataValid = (
@@ -59,7 +60,6 @@ class GridRenderer {
     weight: number,
   ): void {
     if (!this.isValidVector(basis1) || !this.isValidVector(basis2)) {
-      // console.warn("GridRenderer: Invalid basis vectors for display", basis1, basis2);
       return
     }
     const p = this.p
@@ -106,7 +106,6 @@ class GridRenderer {
       }
     } catch (error) {
       console.error("Error during GridRenderer display:", error)
-      // Optional: Add more specific error handling or recovery logic here
     }
   }
 } // End of GridRenderer class
@@ -121,6 +120,11 @@ export class P5BasisRenderer
   private container: HTMLElement | null = null
   private width: number = 0
   private height: number = 0
+  private canvas: P5.Renderer | null = null // p5 캔버스 객체 저장
+
+  // --- Vector v의 상태를 업데이트하기 위한 Vue Ref ---
+  private vxRef: Ref<number> | null = null
+  private vyRef: Ref<number> | null = null
 
   // --- Internal p5 Vectors (for rendering) ---
   private i_hat: P5.Vector | undefined // Standard basis i
@@ -129,17 +133,27 @@ export class P5BasisRenderer
   private e2: P5.Vector | undefined // Primal basis e2
   private epsilon1: P5.Vector | undefined // Dual basis epsilon1
   private epsilon2: P5.Vector | undefined // Dual basis epsilon2
-  private v_std_vec: P5.Vector | undefined // Vector v (standard coords) <-- 추가
+  private v_std_vec: P5.Vector | undefined // Vector v (standard coords)
 
   // --- Vector v Component Data (from state) ---
-  private v_std_coords: { x: number; y: number } | null = null // <-- 추가
-  private v_primal_coords: { x: number; y: number } | null = null // <-- 추가
-  private v_dual_coords: { x: number; y: number } | null = null // <-- 추가
+  private v_std_coords: { x: number; y: number } | null = null
+  private v_primal_coords: { x: number; y: number } | null = null
+  private v_dual_coords: { x: number; y: number } | null = null
 
   // Grid Renderers
   private standardGrid: GridRenderer | undefined
   private primalGrid: GridRenderer | undefined
   private dualGrid: GridRenderer | undefined
+
+  /**
+   * Vue 컴포넌트로부터 Vector v의 x, y 좌표를 관리하는 Ref 객체를 받습니다.
+   * @param vx Vue 컴포넌트의 input_vx_val Ref
+   * @param vy Vue 컴포넌트의 input_vy_val Ref
+   */
+  public setVectorRefs(vx: Ref<number>, vy: Ref<number>): void {
+    this.vxRef = vx
+    this.vyRef = vy
+  }
 
   async setup(
     container: HTMLElement,
@@ -160,68 +174,56 @@ export class P5BasisRenderer
         p.scale(1, -1) // Y축 반전
       }
 
-      /**
-       * 기저 벡터를 화살표와 라벨과 함께 그립니다. (기존 함수)
-       */
       const drawBasisVector = (
         vec: P5.Vector,
         c: P5.Color,
         label: string,
       ): void => {
         if (!isP5VectorValidForDrawing(vec)) {
-          // console.warn(`Skipping drawBasisVector for invalid vector: ${label}`, vec);
           return
         }
         p.push()
         try {
           const vecScaled = vec.copy().mult(SCALE_FACTOR)
           if (!isP5VectorValidForDrawing(vecScaled)) {
-            // console.warn(`Skipping drawBasisVector for invalid scaled vector: ${label}`, vecScaled);
             p.pop()
             return
           }
           p.stroke(c)
           p.strokeWeight(2.5)
           p.fill(c)
-          p.line(0, 0, vecScaled.x, vecScaled.y) // Draw line
+          p.line(0, 0, vecScaled.x, vecScaled.y)
 
           const angle = p.atan2(vecScaled.y, vecScaled.x)
           if (isNaN(angle) || !isFinite(angle)) {
-            // console.warn(`Skipping drawBasisVector arrowhead/label due to invalid angle: ${label}`, angle);
             p.pop()
             return
           }
 
-          p.translate(vecScaled.x, vecScaled.y) // Move to vector tip
-          p.rotate(angle) // Rotate to align with vector
+          p.translate(vecScaled.x, vecScaled.y)
+          p.rotate(angle)
           const arrowSize = 7
-          p.translate(-arrowSize * 1.2, 0) // Move back slightly for arrowhead start
-          p.triangle(0, arrowSize / 2, 0, -arrowSize / 2, arrowSize, 0) // Draw arrowhead
-          p.rotate(-angle) // Rotate back
+          p.translate(-arrowSize * 1.2, 0)
+          p.triangle(0, arrowSize / 2, 0, -arrowSize / 2, arrowSize, 0)
+          p.rotate(-angle)
 
-          // Use a small offset for the label based on angle
-          const labelOffsetDistance = arrowSize * 2.0 // Increased distance slightly
+          const labelOffsetDistance = arrowSize * 2.0
           const labelOffsetX = labelOffsetDistance * p.cos(angle)
           const labelOffsetY = labelOffsetDistance * p.sin(angle)
 
-          // Adjust text alignment based on quadrant for better placement
           if (Math.abs(vecScaled.x) > 0.1 || Math.abs(vecScaled.y) > 0.1) {
-            // Avoid centering at origin
             const labelPosX = labelOffsetX
             const labelPosY = labelOffsetY
 
-            p.translate(labelPosX, labelPosY) // Move relative to tip
-            p.scale(1, -1) // Flip text back upright
+            p.translate(labelPosX, labelPosY)
+            p.scale(1, -1)
             p.noStroke()
             p.fill(c)
             p.textSize(16)
-
-            // Simplified alignment: Center alignment generally works well
             p.textAlign(p.CENTER, p.CENTER)
-            p.text(label, 0, 0) // Draw label at translated origin
+            p.text(label, 0, 0)
           } else {
-            // Handle zero vector case if necessary (e.g., don't draw label)
-            p.scale(1, -1) // Still need to flip back
+            p.scale(1, -1)
           }
         } catch (error) {
           console.error(`Error drawing basis vector ${label}:`, error)
@@ -230,109 +232,87 @@ export class P5BasisRenderer
         }
       }
 
-      /**
-       * --- 추가된 함수 ---
-       * 데이터 벡터 v와 그 성분 레이블들을 함께 그립니다.
-       */
       const drawDataVector = (
-        vec_std: P5.Vector, // Vector defined in standard coords (for drawing arrow)
+        vec_std: P5.Vector,
         coords_std: { x: number; y: number } | null,
         coords_primal: { x: number; y: number } | null,
         coords_dual: { x: number; y: number } | null,
         c: P5.Color,
       ): void => {
-        // Check both vector validity and coordinate data presence
         if (
           !isP5VectorValidForDrawing(vec_std) ||
           !coords_std ||
           isNaN(coords_std.x) ||
           isNaN(coords_std.y)
         ) {
-          // console.warn("Skipping drawDataVector due to invalid vector or missing/NaN std coords", vec_std, coords_std);
-          return // 기본 벡터나 표준 좌표 없거나 유효하지 않으면 그리지 않음
+          return
         }
 
-        p.push() // Start isolated drawing state
+        p.push()
         try {
-          // --- Draw Arrow (based on standard coordinates) ---
           const vecScaled = vec_std.copy().mult(SCALE_FACTOR)
           if (!isP5VectorValidForDrawing(vecScaled)) {
-            // console.warn("Skipping drawDataVector due to invalid scaled vector", vecScaled);
             p.pop()
             return
           }
           p.stroke(c)
           p.strokeWeight(2.5)
           p.fill(c)
-          p.line(0, 0, vecScaled.x, vecScaled.y) // Draw line
+          p.line(0, 0, vecScaled.x, vecScaled.y)
 
           const angle = p.atan2(vecScaled.y, vecScaled.x)
           if (isNaN(angle) || !isFinite(angle)) {
-            // console.warn("Skipping drawDataVector arrowhead/label due to invalid angle", angle);
             p.pop()
             return
           }
 
-          // Draw arrowhead
-          p.translate(vecScaled.x, vecScaled.y) // Move to vector tip
-          p.rotate(angle) // Rotate context to align with vector
+          p.translate(vecScaled.x, vecScaled.y)
+          p.rotate(angle)
           const arrowSize = 7
-          p.translate(-arrowSize * 1.2, 0) // Move back slightly for arrowhead start
+          p.translate(-arrowSize * 1.2, 0)
           p.triangle(0, arrowSize / 2, 0, -arrowSize / 2, arrowSize, 0)
-          p.rotate(-angle) // Rotate back to original axis alignment (but still at tip)
+          p.rotate(-angle)
 
-          // --- Draw Text Labels ---
           p.noStroke()
           p.fill(c)
-          p.textSize(14) // Slightly smaller text size
+          p.textSize(14)
 
-          // Calculate offset from arrowhead tip (relative to tip position)
-          const textOffsetX = 15 // Horizontal distance from tip
-          const textOffsetY = -5 // Vertical start distance (negative moves up in p5's standard coord)
-          const lineHeight = 16 // Vertical space between labels
+          const textOffsetX = 15
+          const textOffsetY = -5
+          const lineHeight = 16
 
-          // Create an offset vector and rotate it by the vector's angle
-          const baseOffset = p.createVector().set(textOffsetX, textOffsetY) // Use createVector directly
-          const rotatedOffset = baseOffset.copy().rotate(angle) // Rotate a copy
+          const baseOffset = p.createVector().set(textOffsetX, textOffsetY)
+          const rotatedOffset = baseOffset.copy().rotate(angle)
 
-          // Apply the final coordinate system flip for text rendering
-          p.scale(1, -1) // Flip y-axis ONLY FOR TEXT rendering
+          p.scale(1, -1)
 
-          // Text position relative to the vector tip (after rotation, before y-flip)
           const textBaseX = rotatedOffset.x
-          let currentTextY = -rotatedOffset.y // Start Y position (negated due to scale flip)
+          let currentTextY = -rotatedOffset.y
 
-          // Determine text alignment based on angle to avoid overlap with arrow shaft
           if (angle > -p.PI * 0.45 && angle < p.PI * 0.45) {
-            // Right side
             p.textAlign(p.LEFT, p.BOTTOM)
           } else if (angle > p.PI * 0.55 || angle < -p.PI * 0.55) {
-            // Left side
             p.textAlign(p.RIGHT, p.BOTTOM)
           } else if (angle >= p.PI * 0.45) {
-            // Top
             p.textAlign(p.CENTER, p.BOTTOM)
-            currentTextY -= lineHeight // Extra space from top arrow
+            currentTextY -= lineHeight
           } else {
-            // Bottom
             p.textAlign(p.CENTER, p.TOP)
-            currentTextY += lineHeight // Extra space from bottom arrow
+            currentTextY += lineHeight
           }
 
-          // Label 1: Standard Coords v,ω(x, y)
           p.text(
             `v,ω(${coords_std.x.toFixed(1)}, ${coords_std.y.toFixed(1)})`,
             textBaseX,
             currentTextY,
           )
 
-          // Label 2: Primal Coords v'(x', y')
           if (
             coords_primal &&
             isFinite(coords_primal.x) &&
             isFinite(coords_primal.y)
           ) {
-            currentTextY -= lineHeight // Move down for next line (in flipped coords)
+            currentTextY -= lineHeight
             p.text(
               `v'(${coords_primal.x.toFixed(1)}, ${coords_primal.y.toFixed(1)})`,
               textBaseX,
@@ -340,13 +320,12 @@ export class P5BasisRenderer
             )
           }
 
-          // Label 3: Dual Coords ω'(ω₁, ω₂)
           if (
             coords_dual &&
             isFinite(coords_dual.x) &&
             isFinite(coords_dual.y)
           ) {
-            currentTextY -= lineHeight // Move down for next line
+            currentTextY -= lineHeight
             p.text(
               `ω'(${coords_dual.x.toFixed(1)}, ${coords_dual.y.toFixed(1)})`,
               textBaseX,
@@ -356,53 +335,89 @@ export class P5BasisRenderer
         } catch (error) {
           console.error("Error drawing data vector:", error)
         } finally {
-          p.pop() // Restore previous drawing state
+          p.pop()
         }
+      }
+
+      // --- 추가된 함수 ---
+      /**
+       * 캔버스 클릭 시 호출되어 클릭 지점의 좌표로 Vector v를 업데이트합니다.
+       */
+      const handleMousePressed = () => {
+        // Ref 객체가 설정되었는지, p5 인스턴스가 유효한지 확인
+        if (!self.vxRef || !self.vyRef || !self.p5Instance) {
+          console.warn("Vector Refs or p5 instance not set for mouse press.")
+          return
+        }
+
+        // p5.js의 mouseX, mouseY는 캔버스 좌상단 기준 픽셀 좌표
+        const mouseX = self.p5Instance.mouseX
+        const mouseY = self.p5Instance.mouseY
+
+        // 캔버스 범위 밖 클릭은 무시
+        if (
+          mouseX < 0 ||
+          mouseX > self.width ||
+          mouseY < 0 ||
+          mouseY > self.height
+        ) {
+          return
+        }
+
+        // 픽셀 좌표 -> 차트 좌표계 변환
+        // 1. 중심점 이동 고려 (캔버스 중심이 (0,0)이 되도록)
+        let chartX = mouseX - self.width / 2
+        let chartY = self.height / 2 - mouseY // Y축 반전 고려 (p5는 위가 0)
+
+        // 2. 스케일링 고려
+        chartX = chartX / SCALE_FACTOR
+        chartY = chartY / SCALE_FACTOR
+
+        // 변환된 좌표로 Vue 컴포넌트의 Ref 업데이트
+        self.vxRef.value = chartX
+        self.vyRef.value = chartY
+
+        // 상태가 업데이트되었으므로 다시 그리도록 요청 (선택적, Vue의 watch가 처리할 수도 있음)
+        // self.p5Instance.redraw();
       }
 
       // --- p.setup ---
       p.setup = () => {
         if (!self.container) {
-          // Use 'self' here
           console.error("P5BasisRenderer: Container not set before setup!")
           return
         }
-        const canvas = p.createCanvas(self.width, self.height) // Use 'self'
-        canvas.parent(self.container) // Use 'self'
+        self.canvas = p.createCanvas(self.width, self.height) // 캔버스 객체 저장
+        self.canvas.parent(self.container)
 
-        // Initialize p5 vectors
-        self.i_hat = p.createVector().set(1, 0) // Use 'self'
-        self.j_hat = p.createVector().set(0, 1) // Use 'self'
-        self.e1 = p.createVector().set(1, 0) // Use 'self'
-        self.e2 = p.createVector().set(0, 1) // Use 'self'
-        self.epsilon1 = p.createVector().set(1, 0) // Use 'self'
-        self.epsilon2 = p.createVector().set(0, 1) // Use 'self'
-        self.v_std_vec = p.createVector().set(1, 1) // Initialize vector v <-- 추가, Use 'self'
+        // --- 중요: 캔버스 클릭 이벤트 핸들러 등록 ---
+        self.canvas.mousePressed(handleMousePressed)
 
-        // --- ADD --- Initialize coordinate data based on known initial state
-        // Initial state: e1=(1,0), e2=(0,1) => M = I, M_inv = I, det=1
-        // v_std = (1,1)
-        // v_primal = M_inv * v_std = I * (1,1) = (1,1)
-        // v_dual = (v_std dot e1, v_std dot e2) = ((1,1) dot (1,0), (1,1) dot (0,1)) = (1, 1)
-        self.v_std_coords = { x: 1, y: 1 } // Use 'self'
-        self.v_primal_coords = { x: 1, y: 1 } // Use 'self'
-        self.v_dual_coords = { x: 1, y: 1 } // Use 'self'
-        // --- END ADD ---
+        self.i_hat = p.createVector().set(1, 0)
+        self.j_hat = p.createVector().set(0, 1)
+        self.e1 = p.createVector().set(1, 0)
+        self.e2 = p.createVector().set(0, 1)
+        self.epsilon1 = p.createVector().set(1, 0)
+        self.epsilon2 = p.createVector().set(0, 1)
+        self.v_std_vec = p.createVector().set(1, 1) // 초기값
 
-        // Initialize Grid Renderers
-        self.standardGrid = new GridRenderer(p, GRID_RANGE, SCALE_FACTOR) // Use 'self'
-        self.primalGrid = new GridRenderer(p, GRID_RANGE, SCALE_FACTOR) // Use 'self'
-        self.dualGrid = new GridRenderer(p, GRID_RANGE, SCALE_FACTOR) // Use 'self'
+        // 초기 좌표 데이터 설정
+        self.v_std_coords = { x: 1, y: 1 }
+        self.v_primal_coords = { x: 1, y: 1 }
+        self.v_dual_coords = { x: 1, y: 1 }
+
+        self.standardGrid = new GridRenderer(p, GRID_RANGE, SCALE_FACTOR)
+        self.primalGrid = new GridRenderer(p, GRID_RANGE, SCALE_FACTOR)
+        self.dualGrid = new GridRenderer(p, GRID_RANGE, SCALE_FACTOR)
 
         p.describe(
-          "Interactive 2D basis transformation visualization showing primal, dual bases, their grids, and a data vector v with its components in different bases.",
+          "Interactive 2D basis transformation visualization. Click on the canvas to set the green vector 'v'.",
         )
         p.noLoop()
       }
 
       // --- p.draw ---
       p.draw = () => {
-        // Check if essential components are ready using 'self'
         if (
           !self.i_hat ||
           !self.j_hat ||
@@ -410,21 +425,19 @@ export class P5BasisRenderer
           !self.e2 ||
           !self.epsilon1 ||
           !self.epsilon2 ||
-          !self.v_std_vec || // <-- 추가
+          !self.v_std_vec ||
           !self.standardGrid ||
           !self.primalGrid ||
           !self.dualGrid
         ) {
-          // console.warn("P5BasisRenderer.draw: Essential components not ready.");
           return // Not ready
         }
 
         try {
-          p.background(255) // Clear background
-          applyCoordinateTransform() // Set coordinate system
+          p.background(255)
+          applyCoordinateTransform()
 
-          // Draw Grids using 'self'
-          self.standardGrid.display(self.i_hat, self.j_hat, p.color(200), 1) // Standard (Gray)
+          self.standardGrid.display(self.i_hat, self.j_hat, p.color(200), 1)
           if (
             isP5VectorValidForDrawing(self.e1) &&
             isP5VectorValidForDrawing(self.e2)
@@ -434,44 +447,41 @@ export class P5BasisRenderer
               self.e2,
               p.color(0, 0, 255, 150),
               1.5,
-            ) // Primal (Blue)
+            )
           }
           if (
             isP5VectorValidForDrawing(self.epsilon1) &&
             isP5VectorValidForDrawing(self.epsilon2)
           ) {
-            // Dual Grid requires epsilon vectors, not e1/e2
             self.dualGrid.display(
-              self.epsilon1, // Corrected
-              self.epsilon2, // Corrected
+              self.epsilon1,
+              self.epsilon2,
               p.color(255, 0, 0, 150),
               1.5,
-            ) // Dual (Red)
+            )
           }
 
-          // Draw Basis Vectors using 'self'
           drawBasisVector(self.e1, p.color(0, 0, 255), "e₁")
           drawBasisVector(self.e2, p.color(0, 0, 255), "e₂")
           drawBasisVector(self.epsilon1, p.color(255, 0, 0), "ε¹")
           drawBasisVector(self.epsilon2, p.color(255, 0, 0), "ε²")
 
-          // --- 추가: Draw Data Vector v ---
+          // 초록색 데이터 벡터 그리기
           drawDataVector(
-            self.v_std_vec, // The vector arrow is always drawn based on standard coordinates
-            self.v_std_coords, // Pass the component data for labels
+            self.v_std_vec,
+            self.v_std_coords,
             self.v_primal_coords,
             self.v_dual_coords,
-            p.color(0, 150, 0), // Green color for vector v
+            p.color(0, 150, 0), // Green color
           )
         } catch (error) {
           console.error("Error in p.draw:", error)
         } finally {
-          p.resetMatrix() // Reset transformations
+          p.resetMatrix()
         }
       }
     } // End of sketch function definition
 
-    // Ensure p5 runs in instance mode
     try {
       this.p5Instance = new P5(sketch)
       if (!this.p5Instance) {
@@ -479,22 +489,14 @@ export class P5BasisRenderer
       }
     } catch (error) {
       console.error("Failed to initialize P5BasisRenderer:", error)
-      this.p5Instance = null // Ensure instance is null on failure
-      // Optionally re-throw or handle the error further
-      // throw error;
+      this.p5Instance = null
     }
   }
 
-  /**
-   * Updates internal p5 vectors and data based on the state, then redraws.
-   */
   draw(state: BasisVisualizationState): void {
-    // Check for p5Instance before accessing its properties or methods
     if (!this.p5Instance) {
-      // console.warn("P5BasisRenderer.draw called before p5 instance is ready.");
       return
     }
-    // Check internal vector states (now checked using self reference logic implicitly via p.draw checks)
     if (
       !this.e1 ||
       !this.e2 ||
@@ -502,12 +504,9 @@ export class P5BasisRenderer
       !this.epsilon2 ||
       !this.v_std_vec
     ) {
-      // console.warn("P5BasisRenderer.draw: Internal vectors not initialized.");
-      return // Not fully initialized
+      return
     }
 
-    // --- Update Basis Vectors ---
-    // Use default NaN values if state data is invalid
     const validE1 = isVectorDataValid(state.e1)
     const validE2 = isVectorDataValid(state.e2)
     const validEpsilon1 = isVectorDataValid(state.epsilon1)
@@ -524,23 +523,19 @@ export class P5BasisRenderer
       validEpsilon2 ? state.epsilon2.y : NaN,
     )
 
-    // --- 추가: Update Vector v Data ---
     const validVStd = isVectorDataValid(state.v_std)
     const validVPrimal = isVectorDataValid(state.v_primal)
     const validVDual = isVectorDataValid(state.v_dual)
 
-    // Update the p5 vector representing v (always based on standard coords)
     this.v_std_vec.set(
       validVStd ? state.v_std.x : NaN,
       validVStd ? state.v_std.y : NaN,
     )
 
-    // Store the component data for labeling, use null if invalid
     this.v_std_coords = validVStd ? { ...state.v_std } : null
     this.v_primal_coords = validVPrimal ? { ...state.v_primal } : null
     this.v_dual_coords = validVDual ? { ...state.v_dual } : null
 
-    // Trigger p5 redraw only if instance exists
     try {
       this.p5Instance.redraw()
     } catch (error) {
@@ -551,26 +546,32 @@ export class P5BasisRenderer
   destroy(): void {
     if (this.p5Instance) {
       try {
+        // 마우스 이벤트 리스너 명시적 제거 (필요 시)
+        if (this.canvas) {
+          this.canvas.mousePressed(null as any) // p5 타입 정의가 완벽하지 않을 수 있음
+        }
         this.p5Instance.remove()
         console.log("P5BasisRenderer destroyed.")
       } catch (error) {
         console.error("Error removing p5 instance:", error)
       } finally {
         this.p5Instance = null
+        this.canvas = null
       }
     }
     this.container = null
+    this.vxRef = null // Ref 참조 해제
+    this.vyRef = null // Ref 참조 해제
     this.i_hat = undefined
     this.j_hat = undefined
     this.e1 = undefined
     this.e2 = undefined
     this.epsilon1 = undefined
     this.epsilon2 = undefined
-    this.v_std_vec = undefined // <-- 추가
+    this.v_std_vec = undefined
     this.standardGrid = undefined
     this.primalGrid = undefined
     this.dualGrid = undefined
-    // Clear component data
     this.v_std_coords = null
     this.v_primal_coords = null
     this.v_dual_coords = null
@@ -582,7 +583,6 @@ export class P5BasisRenderer
     if (this.p5Instance) {
       try {
         this.p5Instance.resizeCanvas(this.width, this.height)
-        // Redraw after resize is generally needed
         this.p5Instance.redraw()
       } catch (error) {
         console.error("Error resizing p5 canvas:", error)

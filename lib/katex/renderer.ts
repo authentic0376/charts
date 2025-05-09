@@ -10,17 +10,33 @@ interface CalculatedState {
   e2: { x: number; y: number }
   epsilon1: { x: number; y: number }
   epsilon2: { x: number; y: number }
+  v_std: { x: number; y: number }
+  v_primal: { x: number; y: number }
+  v_dual: { x: number; y: number }
+}
+
+// Katex 렌더링 대상 Label 요소 Ref 타입 정의
+interface KatexLabelRefs {
+  basis_transformation: Ref<HTMLElement | null>
+  dual_basis_transformation: Ref<HTMLElement | null>
+  contravariant_component_transformation: Ref<HTMLElement | null>
+  covariant_component_transformation: Ref<HTMLElement | null>
 }
 
 // KaTeX 렌더링 대상 요소 Ref 타입 정의
 interface KatexElementRefs {
-  el_primal_e1: Ref<HTMLElement | null>
   el_primal_e2: Ref<HTMLElement | null>
-  el_matrix_m: Ref<HTMLElement | null>
   el_determinant: Ref<HTMLElement | null>
   el_dual_epsilon1: Ref<HTMLElement | null>
   el_dual_epsilon2: Ref<HTMLElement | null>
   el_matrix_m_inv: Ref<HTMLElement | null>
+
+  basis_transformation_value: Ref<HTMLElement | null>
+  dual_basis_transformation_value: Ref<HTMLElement | null>
+
+  el_v_std: Ref<HTMLElement | null>
+  contravariant_component_transformation_value: Ref<HTMLElement | null>
+  covariant_component_transformation_value: Ref<HTMLElement | null>
 }
 
 // --- Formatting Helpers ---
@@ -75,6 +91,19 @@ const renderKatex = (
   }
 }
 
+export function initializeLabelDOM(elements: KatexLabelRefs): void {
+  renderKatex(elements.basis_transformation.value, `E'=EA`)
+  renderKatex(elements.dual_basis_transformation.value, `(E^*)' = A^{-1}E^*`)
+  renderKatex(
+    elements.contravariant_component_transformation.value,
+    `\\mathbf v' = A^{-1}\\mathbf v `,
+  )
+  renderKatex(
+    elements.covariant_component_transformation.value,
+    `\\boldsymbol\\omega' = \\boldsymbol\\omega A`,
+  )
+}
+
 // --- Main DOM Update Function ---
 export function updateInfoDOM(
   state: CalculatedState,
@@ -82,34 +111,55 @@ export function updateInfoDOM(
 ): void {
   // 각 요소에 대해 renderKatex 호출
   renderKatex(
-    elements.el_primal_e1.value,
-    `\\mathbf{e}_1 = ${formatVectorLatex(state.e1)}`,
-  )
-  renderKatex(
-    elements.el_primal_e2.value,
-    `\\mathbf{e}_2 = ${formatVectorLatex(state.e2)}`,
-  )
-  renderKatex(
-    elements.el_matrix_m.value,
-    `M = ${formatMatrixLatex([
+    elements.basis_transformation_value.value,
+    `${formatMatrixLatex([
       [state.e1.x, state.e2.x],
       [state.e1.y, state.e2.y],
-    ])}`,
+    ])}
+    =
+   ${formatMatrixLatex([
+     [1, 0],
+     [0, 1],
+   ])} 
+   ${formatMatrixLatex([
+     [state.e1.x, state.e2.x],
+     [state.e1.y, state.e2.y],
+   ])}
+    `,
+  )
+
+  renderKatex(
+    elements.dual_basis_transformation_value.value,
+    `
+    ${formatMatrixLatex([
+      [state.epsilon1.x, state.epsilon2.x],
+      [state.epsilon1.y, state.epsilon2.y],
+    ])}
+    =
+    ${formatMatrixLatex(state.M_inv)}
+      ${formatMatrixLatex([
+        [1, 0],
+        [0, 1],
+      ])} 
+    `,
   )
   renderKatex(
-    elements.el_determinant.value,
-    `\\det(M) \\approx ${formatNum(state.detM, 3)}`,
+    elements.contravariant_component_transformation_value.value,
+    `${formatVectorLatex(state.v_primal)}
+  =
+  ${formatMatrixLatex(state.M_inv)}
+  ${formatVectorLatex(state.v_std)}
+  `,
   )
   renderKatex(
-    elements.el_dual_epsilon1.value,
-    `\\boldsymbol{\\epsilon}^1 = ${formatVectorLatexRow(state.epsilon1)}`,
-  )
-  renderKatex(
-    elements.el_dual_epsilon2.value,
-    `\\boldsymbol{\\epsilon}^2 = ${formatVectorLatexRow(state.epsilon2)}`,
-  )
-  renderKatex(
-    elements.el_matrix_m_inv.value,
-    `M^{-1} = ${formatMatrixLatex(state.M_inv)}`,
+    elements.covariant_component_transformation_value.value,
+    `${formatVectorLatexRow(state.v_dual)}
+  =
+  ${formatVectorLatexRow(state.v_std)}
+  ${formatMatrixLatex([
+    [state.e1.x, state.e2.x],
+    [state.e1.y, state.e2.y],
+  ])}
+  `,
   )
 }

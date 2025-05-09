@@ -19,10 +19,5 @@ export default defineNuxtConfig({
   css: ["~/assets/css/main.css"],
   vite: {
     plugins: [tailwindcss()],
-    ssr: {
-      // 서버 빌드 시 'p5'와 'gifenc'를 외부 모듈로 처리하도록 명시
-      // 서버 번들에 포함시키지 않음 (클라이언트에서만 로드될 것으로 가정)
-      external: ["p5", "gifenc"],
-    },
   },
 })
